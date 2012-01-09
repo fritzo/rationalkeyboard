@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--
+  The Rational Keybard: version (2012-01-07)
+  http://fritzo.org/keys
+
+  Copyright (c) 2012, Fritz Obermeyer
+  Licensed under the MIT license:
+  http://www.opensource.org/licenses/mit-license.php
+-->
+<html>
+<head>
+<title>The Rational Keyboard</title>
+<!----------------------------------------------------------------------------->
+<script type='text/javascript' src='jquery.min.js'></script> <!-- MIT,GPL2 -->
+<script type='text/javascript' src='modernizr.custom.js'></script> <!-- MIT,BSD -->
+<script type='text/javascript' src='safety.js'></script>
+<script type='text/javascript' src='keys.js'></script>
+<!----------------------------------------------------------------------------->
+<style>
+body {
+  background-color: black;
+  width:  100%;
+  height: 100%;
+  margin: 0px;
+}
+.warning {
+  font-size: 24pt;
+  color: red;
+  background-color: white;
+}
+
+canvas {
+  position: fixed; 
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+#toolbar {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  opacity: 0.8;
+}
+
+#toolbar button,
+#toolbar select,
+#toolbar option {
+  background-color: #444444;
+  color: white;
+  font-family: helvetica, verdana, sans;
+  font-size: 16px;
+}
+button,
+select {
+  margin: 0px;
+  border: solid 2px black;
+  border-radius: 12px;
+  padding-left:  0.9ex;
+  padding-right: 0.9ex;
+}
+option {
+  padding: 0px;
+  margin: 0px;
+}
+button:hover,
+select:hover,
+option:hover {
+  background-color: #666666;
+}
+.roundRound {
+  border-top-left-radius:     12px;
+  border-bottom-left-radius:  12px;
+  border-top-right-radius:    12px;
+  border-bottom-right-radius: 12px;
+  padding-left:  0.7em;
+  padding-right: 0.7em;
+}
+.roundFlat {
+  border-top-left-radius:     12px;
+  border-bottom-left-radius:  12px;
+  border-top-right-radius:    4px;
+  border-bottom-right-radius: 4px;
+  padding-left:  0.7em;
+  padding-right: 0.5em;
+}
+.flatRound {
+  border-top-left-radius:     4px;
+  border-bottom-left-radius:  4px;
+  border-top-right-radius:    12px;
+  border-bottom-right-radius: 12px;
+  padding-left:  0.5em;
+  padding-right: 0.7em;
+}
+.flatFlat {
+  border-top-left-radius:     4px;
+  border-bottom-left-radius:  4px;
+  border-top-right-radius:    4px;
+  border-bottom-right-radius: 4px;
+  padding-left:  0.5em;
+  padding-right: 0.5em;
+}
+
+#canvas { z-index: 0; }
+#toolbar { z-index: 1; }
+</style>
+</head>
+<!----------------------------------------------------------------------------->
+<body>
+<canvas id='canvas'></canvas>
+<div id='toolbar'>
+<select id='style' title='set visual style' class='roundFlat'>
+  <option value='wedges'>wedges</option>
+  <option value='piano'>piano</option>
+  <option value='thermal'>thermal</option>
+  <option value='flow'>flow</option>
+</select><!--
+  --><a href='http://fritzobermeyer.wordpress.com/2012/01/08/the-rational-keyboard' target='_blank' title='read blog post'><button class='flatRound'>about</button></a>
+</div>
+</body>
+</html>
+
