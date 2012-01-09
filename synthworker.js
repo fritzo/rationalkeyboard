@@ -1,6 +1,7 @@
 /*
-  The Rational Keybard: version (2012-01-07)
+  The Rational Keybard
   http://fritzo.org/keys
+  git://github.com/fritzo/rationalkeyboard.git
 
   Copyright (c) 2012, Fritz Obermeyer
   Licensed under the MIT license:
