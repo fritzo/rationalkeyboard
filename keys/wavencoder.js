@@ -1,22 +1,18 @@
 /*
-  The Rational Keybard
-  http://fritzo.org/keys
-  git://github.com/fritzo/rationalkeyboard.git
-
-  Copyright (c) 2012, Fritz Obermeyer
-  Licensed under the MIT license:
-  http://www.opensource.org/licenses/mit-license.php
-*/
-
-//------------------------------------------------------------------------------
-// WaveEncoder
-// Converts [0,1]-valued array |-> base64-encoded data uri.
-// The base64 encoding is implemented using 16-bit words.
+ * WaveEncoder
+ * Converts [0,1]-valued array --> base64-encoded data uri.
+ * The base64 encoding is implemented using 16-bit words.
+ *
+ * Copyright (c) 2012, Fritz Obermeyer
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/mit-license.php
+ */
 
 var WavEncoder = function (numSamples) {
 
   this.numSamples = numSamples;
 
+  // TODO add these as parameters
   var PCM_FORMAT = 1;
   var bytesPerSample = 2;
   var bitsPerSample = bytesPerSample * 8;
@@ -42,7 +38,7 @@ var WavEncoder = function (numSamples) {
       this.encode = this.encode16;
       break;
 
-    default: throw 'unsupported bytesPerSamp;e: ' + bytesPerSample;
+    default: throw 'unsupported bytesPerSample: ' + bytesPerSample;
   }
 
   // we encode using 16-bit words
@@ -185,4 +181,11 @@ WavEncoder.prototype = {
 
   WavEncoder.pairTable = pairTable;
 })();
+
+// WavEncoder is optimized to encode many data sequences of the same length,
+// but we provide a one-off function for convenience.
+WavEncoder.encode = function (data) {
+  var encoder = new WavEncoder(data.length);
+  return encoder.encode(data);
+};
 

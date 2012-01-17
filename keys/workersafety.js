@@ -1,17 +1,16 @@
 /*
-  The Rational Keybard
-  http://fritzo.org/keys
-  git://github.com/fritzo/rationalkeyboard.git
-
-  Copyright (c) 2012, Fritz Obermeyer
-  Licensed under the MIT license:
-  http://www.opensource.org/licenses/mit-license.php
-*/
+ * Tools for safe coding and unit testing in web workers
+ *
+ * Copyright (c) 2012, Fritz Obermeyer
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/mit-license.php
+ */
 
 //------------------------------------------------------------------------------
 // Global safety
 
 var globalEval = eval;
+'use strict';
 
 var TodoException = function (message) {
   this.message = message || '(unfinished code)';

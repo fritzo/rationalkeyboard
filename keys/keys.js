@@ -1,12 +1,10 @@
 /*
-  The Rational Keybard
-  http://fritzo.org/keys
-  git://github.com/fritzo/rationalkeyboard.git
-
-  Copyright (c) 2012, Fritz Obermeyer
-  Licensed under the MIT license:
-  http://www.opensource.org/licenses/mit-license.php
-*/
+ * The Rational Keybard
+ *
+ * Copyright (c) 2012, Fritz Obermeyer
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/mit-license.php
+ */
 
 var config = {
   harmony: {
@@ -49,7 +47,8 @@ var config = {
       temperature: 3,
       cornerRadius: 1/3,
       textHeight: 28
-    }
+    },
+    defaultStyle: 'piano'
   },
 
   test: {
@@ -414,10 +413,15 @@ Harmony.prototype = {
     this.profileCount = 0;
 
     this.lastTime = Date.now();
+    this.updateTask = undefined;
     this.updateDiffusion();
   },
   stop: function () {
     this.running = false;
+    if (this.updateTask !== undefined) {
+      clearTimeout(this.updateTask);
+      this.updateTask = undefined;
+    }
 
     if (!testing) {
       var profileRate =
@@ -449,7 +453,10 @@ Harmony.prototype = {
 
     if (this.running) {
       var harmony = this;
-      setTimeout(function(){ harmony.updateDiffusion(); }, this.delayMs);
+      this.updateTask = setTimeout(function(){
+            harmony.updateTask = undefined;
+            harmony.updateDiffusion();
+          }, this.delayMs);
     }
 
     this.profileCount += 1;
@@ -568,11 +575,16 @@ Synthesizer.prototype = {
         }
       });
 
-    this.targetTime = Date.now();
+    this.targetTime = Date.now() + this.delayMs;
+    this.updateTask = undefined;
     this.update();
   },
   stop: function () {
     this.running = false;
+    if (this.updateTask !== undefined) {
+      clearTimeout(this.updateTask);
+      this.updateTask = undefined;
+    }
 
     this.synthworker.terminate();
 
@@ -589,13 +601,21 @@ Synthesizer.prototype = {
   play: function (uri) {
     var audio = new Audio(uri);
 
+    // XXX TODO there seems to be a bug here.
+    //   about 20sec after app starts, audio gets choppy.
+    //   goes away when pause-resume
+    //   does not go away when switching screens
     var now = Date.now();
-    var delay = this.targetTime - now;
+    var delay = Math.min(this.delayMs, this.targetTime - now);
     this.targetTime = Math.max(now, this.targetTime + this.delayMs);
 
     if (this.running) {
       var synth = this;
-      setTimeout(function () { audio.play(); synth.update(); }, delay);
+      this.updateTask = setTimeout(function () {
+            synth.updateTask = undefined;
+            audio.play();
+            synth.update();
+          }, delay);
     }
   },
 
@@ -694,6 +714,7 @@ Keyboard.prototype = {
     this.profileTime = Date.now();
     this.profileCount = 0;
 
+    this.updateTask = undefined;
     this.update();
 
     var keyboard = this;
@@ -739,6 +760,10 @@ Keyboard.prototype = {
 
   stop: function () {
     this.running = false;
+    if (this.updateTask !== undefined) {
+      clearTimeout(this.updateTask);
+      this.updateTask = undefined;
+    }
 
     if (!testing) {
       var profileRate =
@@ -769,7 +794,10 @@ Keyboard.prototype = {
 
     if (this.running) {
       var keyboard = this;
-      setTimeout(function(){ keyboard.update(); }, this.delayMs);
+      this.updateTask = setTimeout(function(){
+            keyboard.updateTask = undefined;
+            keyboard.update();
+          }, this.delayMs);
     }
 
     this.profileCount += 1;
@@ -1641,8 +1669,6 @@ Keyboard.styles.wedges = {
 //------------------------------------------------------------------------------
 // Main
 
-Keyboard.setStyle('wedges');
-
 test('main', function(){
   var harmony = new Harmony(8);
   var synthesizer = new Synthesizer(harmony);
@@ -1674,6 +1700,8 @@ $(document).ready(function(){
   if (!verifyBrowser()) return;
 
   var canvas = document.getElementById('canvas');
+  var $style = $('#style');
+  var style = config.keyboard.defaultStyle;
   $(window).resize(function(){
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -1694,11 +1722,21 @@ $(document).ready(function(){
       return;
     }
     else if (window.location.hash.substr(1,6) === 'style=') {
-      var style = window.location.hash.substr(7);
-      $('#style').val(style);
-      Keyboard.setStyle(style);
+      style = window.location.hash.substr(7);
     }
   }
+
+  $style.val(style);
+  window.location.hash = 'style=' + style;
+  Keyboard.setStyle(style);
+
+  $(window).hashchange(function(){
+        if (window.location.hash.substr(1,6) === 'style=') {
+          style = window.location.hash.substr(7);
+          $style.val(style);
+          Keyboard.setStyle(style);
+        }
+      });
 
   var harmony = new Harmony(config.harmony.maxRadius);
   var synthesizer = new Synthesizer(harmony);
@@ -1737,7 +1775,6 @@ $(document).ready(function(){
         }
       });
 
-  var $style = $('#style');
   $style.on('change', function(){
         var wasRunning = running;
         stopRunning();

@@ -1,17 +1,16 @@
 /*
-  The Rational Keybard
-  http://fritzo.org/keys
-  git://github.com/fritzo/rationalkeyboard.git
-
-  Copyright (c) 2012, Fritz Obermeyer
-  Licensed under the MIT license:
-  http://www.opensource.org/licenses/mit-license.php
-*/
+ * Tools for safe coding and unit testing in the main window
+ *
+ * Copyright (c) 2012, Fritz Obermeyer
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/mit-license.php
+ */
 
 //------------------------------------------------------------------------------
 // Global safety & testing
 
 var globalEval = eval;
+'use strict';
 
 var TodoException = function (message) {
   this.message = message || '(unfinished code)';
@@ -64,6 +63,31 @@ var test = function (title, callback) {
 };
 test._all = [];
 test.runAll = function () {
+
+  $('<style type=text/css>#testLog p{margin: 0px;}</style>').appendTo('head');
+  var $log = $(document.createElement('div'))
+    .attr('id', 'testLog')
+    .css({
+          position: 'absolute',
+          width: '80%',
+          left: '10%',
+          color: 'black',
+          'background-color': 'white',
+          border: 'solid 8px white',
+          'border-radius': '16px',
+          opacity: '0.9',
+          'font-size': '10pt',
+          'font-family': 'Courier,Courier New,Nimbus Mono L,fixed,monospace',
+          'z-index': '99'
+        })
+    .appendTo('body');
+
+  var oldLog = log;
+  log = function (message) {
+    $(document.createElement('p')).text(message).appendTo($log);
+    oldLog(message);
+  };
+
   log('[ Running ' + test._all.length + ' unit tests ]');
   testing = true;
 
@@ -81,8 +105,16 @@ test.runAll = function () {
 
   if (failCount) {
     log('[ failed ' + failCount + ' tests ]');
+    $log.css({
+          'background-color': '#ffaaaa',
+          'border-color': '#ffaaaa',
+        });
   } else {
     log('[ passed all tests :) ]');
+    $log.css({
+          'background-color': '#aaffaa',
+          'border-color': '#aaffaa',
+        });
   }
 };
 
