@@ -1,13 +1,14 @@
 /*
- * The Rational Keybard
+ * The Rational Keyboard
+ * http://fritzo.org/keys
  *
  * Copyright (c) 2012, Fritz Obermeyer
  * Licensed under the MIT license:
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-importScripts('workersafety.js');
-importScripts('wavencoder.js');
+importScripts('../common/workersafety.js');
+importScripts('../common/wavencoder.js');
 
 //------------------------------------------------------------------------------
 // Commands
