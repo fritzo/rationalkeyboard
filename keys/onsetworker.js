@@ -1,5 +1,6 @@
 /*
- * The Rational Keybard
+ * The Rational Keyboard
+ * http://fritzo.org/keys
  *
  * Copyright (c) 2012, Fritz Obermeyer
  * Licensed under the MIT license:

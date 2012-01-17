@@ -1,7 +1,10 @@
 /*
  * WaveEncoder
  * Converts [0,1]-valued array --> base64-encoded data uri.
- * The base64 encoding is implemented using 16-bit words.
+ * The optimized base64 encoding is implemented using 16-bit words.
+ *
+ * TODO maybe switch to the more portable SoundManager2
+ * http://www.schillmania.com/projects/soundmanager2
  *
  * Copyright (c) 2012, Fritz Obermeyer
  * Licensed under the MIT license:

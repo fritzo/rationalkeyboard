@@ -1,5 +1,6 @@
 /*
- * The Rational Keybard
+ * The Rational Keyboard
+ * http://fritzo.org/keys
  *
  * Copyright (c) 2012, Fritz Obermeyer
  * Licensed under the MIT license:
@@ -819,8 +820,6 @@ Keyboard.prototype = {
   fracBars: '\u2013\u2014\u2015', // narrow, medium, wide
 };
 
-// TODO add button to switch styles
-
 Keyboard.styles = {};
 
 Keyboard.setStyle = function (style) {
@@ -1186,8 +1185,6 @@ Keyboard.styles.flow = {
 //----------------------------------------------------------------------------
 // Visualization: piano
 
-// TODO implement swiping gestures
-
 Keyboard.styles.piano = {
 
   updateGeometry: function () {
@@ -1225,11 +1222,11 @@ Keyboard.styles.piano = {
       }
     }
 
-    //var radii = ypos.slice();
-    var radii = ypos.map(function(y){ return 1 - (1 - y) * (1 - y); });
-    var xpos = [];
-    var xmax = 0;
-    // TODO symmetrize by averaging left- and right- constrained versions
+    var radii = ypos.map(function(y){ return 1 - Math.pow(1 - y, 3); });
+
+    // Pass 1: hard constrain to left
+    var xposLeft = [];
+    var xmaxLeft = 0;
     for (var k = 0; k < K; ++k) {
       var r = radii[k];
       var x = r;
@@ -1237,7 +1234,7 @@ Keyboard.styles.piano = {
 
       for (var k2 = 0; k2 < k; ++k2) {
         var r2 = radii[k2];
-        var x2 = xpos[k2];
+        var x2 = xposLeft[k2];
         var y2 = ypos[k2];
 
         //var padding = y2 < y ? r2 + r * Math.pow(y2 / y, 2)
@@ -1246,11 +1243,40 @@ Keyboard.styles.piano = {
         x = Math.max(x, x2 + padding);
       }
 
-      xpos[k] = x;
-      xmax = Math.max(xmax, x + r);
+      xposLeft[k] = x;
+      xmaxLeft = Math.max(xmaxLeft, x + r);
     }
-    xpos = xpos.map(function(x){ return x / xmax; });
-    radii = radii.map(function(r){ return r / xmax; });
+
+    // Pass 2: hard constrain to right
+    var xposRight = [];
+    var xmaxRight = 0;
+    for (var k = K-1; k >= 0; --k) {
+      var r = radii[k];
+      var x = r;
+      var y = ypos[k];
+
+      for (var k2 = K-1; k2 > k; --k2) {
+        var r2 = radii[k2];
+        var x2 = xposRight[k2];
+        var y2 = ypos[k2];
+
+        //var padding = y2 < y ? r2 + r * Math.pow(y2 / y, 2)
+        //                     : r2 * Math.pow(y / y2, 2) + r;
+        var padding = (r2 + r) * Math.pow(2 / (y2 / y + y / y2), 8);
+        x = Math.max(x, x2 + padding);
+      }
+
+      xposRight[k] = x;
+      xmaxRight = Math.max(xmaxRight, x + r);
+    }
+
+    // Fuse passes 1 & 2
+    var xpos = xposLeft;
+    var radiusScale = 0.5 / xmaxLeft + 0.5 / xmaxRight;
+    for (var k = 0; k < K; ++k) {
+      radii[k] = radii[k] * radiusScale;
+      xpos[k] = 0.5 * (1 + xposLeft[k] / xmaxLeft - xposRight[k] / xmaxRight);
+    }
     if (testing) {
       for (var k = 0; k < K; ++k) {
         assert(0 <= xpos[k] && xpos[k] <= 1,
@@ -1407,18 +1433,20 @@ Keyboard.styles.piano = {
     this.swipeY0 = y1;
 
     // TODO compute old,new vectors using old,new geometry (not new,new)
-    if ((x0 === x1) && (y0 === y1)) return; // only works for new,new geometry
+    if (x0 === x1) return; // only works for new,new geometry
 
     var keys = this.keys;
     var ypos = this.ypos;
-    var xpos = this.xpos;
+    var xpos = this.xpos
+    var radii = this.radii;
+    var dir = x0 < x1 ? -1 : 1;
 
     var indices = [];
     for (var k = 0, K = keys.length; k < K; ++k) {
       var y = ypos[k];
       if ((y0 > y) || (y1 > y)) continue; // approximate
 
-      var x = xpos[k];
+      var x = xpos[k] + dir * radii[k];
       if ((x0 - x) * (x - x1) > 0) {
         indices.push(keys[k]);
       }
@@ -1767,6 +1795,7 @@ $(document).ready(function(){
     running ? stopRunning() : startRunning();
   };
 
+  $('#pauseButton').on('click', toggleRunning);
   $(document).on('keyup', function (e) {
         switch (e.which) {
           case 27:
@@ -1786,6 +1815,6 @@ $(document).ready(function(){
         wasRunning ? startRunning() : $(window).resize();
       });
 
-  startRunning();
+  setTimeout(startRunning, 1000);
 });
 
