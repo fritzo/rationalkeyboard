@@ -22,7 +22,11 @@ var init = function (data) {
   self.T = data.numSamples;
 
   self.wavEncoder = new WavEncoder(data.numSamples);
-  self.samples = [];
+  self.samples = new Array(self.T);
+  self.amps = new Array(self.F);
+  self.best = new Array(self.F);
+  self.bestAmps = new Array(self.numVoices);
+  self.bestFreqs = new Array(self.numVoices);
 
   self.initialized = true;
 };
@@ -38,8 +42,8 @@ var synthesize = function (mass) {
   var F = self.F;
   var T = self.T;
 
-  var amps = [];
-  var best = [];
+  var amps = self.amps;
+  var best = self.best;
   var normalizeEnvelope = 4 / ((T+1) * (T+1));
   var gain = self.gain * normalizeEnvelope * self.centerFreq;
   for (var f = 0; f < F; ++f) {
@@ -49,8 +53,8 @@ var synthesize = function (mass) {
   best.sort(function(i,j){ return amps[j] - amps[i]; });
 
   var G = self.numVoices;
-  var bestAmps = [];
-  var bestFreqs = [];
+  var bestAmps = self.bestAmps;
+  var bestFreqs = self.bestFreqs;
   for (var g = 0; g < G; ++g) {
     var f = best[g];
     bestAmps[g] = amps[f] / freqs[f];

@@ -20,7 +20,7 @@ var init = function (data) {
   self.T = data.numSamples;
 
   self.wavEncoder = new WavEncoder(data.numSamples);
-  self.samples = [];
+  self.samples = new Array(self.T);
 
   var tasks = data.tasks;
   assertEqual(tasks.length, self.freqs.length,

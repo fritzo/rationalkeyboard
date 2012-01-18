@@ -817,7 +817,7 @@ Keyboard.prototype = {
     }
   },
 
-  fracBars: '\u2013\u2014\u2015', // narrow, medium, wide
+  fracBars: '\u2013\u2014\u2015' // narrow, medium, wide
 };
 
 Keyboard.styles = {};

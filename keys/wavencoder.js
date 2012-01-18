@@ -3,6 +3,11 @@
  * Converts [0,1]-valued array --> base64-encoded data uri.
  * The optimized base64 encoding is implemented using 16-bit words.
  *
+ * Since this encoder does not rely on window.btoa for encoding,
+ * it can be used also in Web Worker threads.
+ * To use in the main window, include safety.js;
+ * to use in a web worker, include workersafety.js.
+ *
  * TODO maybe switch to the more portable SoundManager2
  * http://www.schillmania.com/projects/soundmanager2
  *
@@ -11,16 +16,18 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-var WavEncoder = function (numSamples) {
+var WavEncoder = function (numSamples, options) {
 
   this.numSamples = numSamples;
 
-  // TODO add these as parameters
+  options = options || {};
+  var defaults = WavEncoder.defaults;
+  var bytesPerSample = options.bytesPerSample || defaults.bytesPerSample;
+  var numChannels    = options.numChannels    || defaults.numChannels;
+  var sampleRateHz   = options.sampleRateHz   || defaults.sampleRateHz;
+
   var PCM_FORMAT = 1;
-  var bytesPerSample = 2;
   var bitsPerSample = bytesPerSample * 8;
-  var numChannels = 1; // mono
-  var sampleRateHz = 22050;
   var byteRateHz = sampleRateHz * bytesPerSample * numChannels;
   var byteAlignment = numChannels * bytesPerSample;
 
@@ -67,12 +74,9 @@ var WavEncoder = function (numSamples) {
       getUint32(dataBytes),
       []);
 
-  var h = this.headerWords;
   var bytesPerWord = 2;
   var dataWords = dataBytes / bytesPerWord;
-  for (var t = 0, T = dataWords; t < T; ++t) {
-    words[h++] = 0;
-  }
+  words.length = this.headerWords + dataWords;
   while (words.length % 3) words.push(0);
 };
 
@@ -148,11 +152,13 @@ WavEncoder.prototype = {
     var words = this.words;
     var pairTable = WavEncoder.pairTable;
 
-    var result = 'data:audio/wav;base64,';
-    for (var t = 0, T = words.length; t < T; t += 3) {
-      var a16 = words[t + 0];
-      var b16 = words[t + 1];
-      var c16 = words[t + 2];
+    var result = new Array(1 + words.length * 4/3);
+    var r = 0;
+    result[r++] = 'data:audio/wav;base64,';
+    for (var r = 1, t = 0, T = words.length; t < T;) {
+      var a16 = words[t++];
+      var b16 = words[t++];
+      var c16 = words[t++];
 
       // with 4 bits per letter:
       // A A A A B B B B C C C C 
@@ -163,13 +169,19 @@ WavEncoder.prototype = {
       var c12 = ((b16 << 4) | (c16 >> 12)) & 4095;
       var d12 = c16 & 4095;
 
-      result += ( pairTable[a12]
-                + pairTable[b12]
-                + pairTable[c12]
-                + pairTable[d12] );
+      result[r++] = pairTable[a12];
+      result[r++] = pairTable[b12];
+      result[r++] = pairTable[c12];
+      result[r++] = pairTable[d12];
     }
-    return result;
+    return result.join('');
   }
+};
+
+WavEncoder.defaults = {
+  numChannels: 1,      // mono
+  sampleRateHz: 22050, // 22050 Hz
+  bytesPerSample: 2    // 16 bit
 };
 
 (function(){
