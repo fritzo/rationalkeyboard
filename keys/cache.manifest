@@ -1,0 +1,21 @@
+CACHE MANIFEST
+# version 2011-01-19
+
+# use CACHE or NETWORK here
+CACHE:
+
+index.html
+jquery.min.js
+jquery.ba-hashchange.min.js
+modernizr.custom.js
+safety.js
+workersafety.js
+wavencoder.js
+keys.js
+onsetworker.js
+synthworker.js
+favicon.ico
+apple-touch-icon-57x57.png
+apple-touch-icon-72x72.png
+apple-touch-icon-114x114.png
+

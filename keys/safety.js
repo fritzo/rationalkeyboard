@@ -1,5 +1,6 @@
 /*
- * Tools for safe coding and unit testing in the main window
+ * Tools for safe coding and unit testing in the main window.
+ * (see workersafety.js for analogs in web workers)
  *
  * Copyright (c) 2012, Fritz Obermeyer
  * Licensed under the MIT license:

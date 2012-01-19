@@ -743,6 +743,7 @@ Keyboard.prototype = {
                   keyboard.swipeX1 = e.pageX / window.innerWidth;
                   keyboard.swipeY1 = e.pageY / window.innerHeight;
                 });
+            e.preventDefault(); // avoid selecting buttons
           });
       $canvas.on('mouseup.keyboard', function (e) {
             $canvas.off('mousemove.keyboard');
@@ -752,9 +753,11 @@ Keyboard.prototype = {
                   e.pageY / window.innerHeight);
             }
             keyboard._swiped = true;
+            e.preventDefault(); // avoid selecting buttons
           });
       $canvas.on('mouseout.keyboard', function (e) {
             $canvas.off('mousemove.keyboard');
+            e.preventDefault(); // avoid selecting buttons
           });
     }
   },

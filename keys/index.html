@@ -1,16 +1,29 @@
 <!DOCTYPE html>
 <!--
-  The Rational Keybard: version (2012-01-17)
+  The Rational Keybard
   http://fritzo.org/keys
 
   Copyright (c) 2012, Fritz Obermeyer
   Licensed under the MIT license:
   http://www.opensource.org/licenses/mit-license.php
 -->
-<html>
+<html manifest="cache.manifest">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>The Rational Keyboard</title>
-<link rel="icon" href="favicon.ico" type="image/x-icon"> 
+<meta name="description" content="The Rational Keyboard is an experiment in harmony on the rational number line. It's kind of like a piano with infinitely many keys that move around and resize based on what sounds good." />
+<meta name="keywords" content="music,instrument,piano,scale,intonation,audio,math" />
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link rel="apple-touch-icon" href="apple-touch-icon-57x57.png" />
+<link rel="apple-touch-icon" sizes="72x72" href="apple-touch-icon-72x72.png" />
+<link rel="apple-touch-icon" sizes="114x114" href="appletouch-icon-114x114.png" />
+<!--
+webapp tools as recommended by
+http://matt.might.net/articles/how-to-native-iphone-ipad-apps-in-javascript
+-->
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 <!----------------------------------------------------------------------------->
 <script type='text/javascript' src='jquery.min.js'></script> <!-- MIT,GPL2 -->
 <script type='text/javascript' src='jquery.ba-hashchange.min.js'></script> <!-- MIT,GPL2 -->
@@ -124,6 +137,8 @@ option:hover {
 </body>
 
 <script type="text/javascript">
+if (location.hostname === 'fritzo.org') {
+
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-28196512-1']);
 _gaq.push(['_trackPageview']);
@@ -133,6 +148,8 @@ var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async
 ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
 })();
+
+} // fritzo.org
 </script>
 
 </html>
