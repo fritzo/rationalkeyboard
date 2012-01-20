@@ -24,13 +24,38 @@ http://matt.might.net/articles/how-to-native-iphone-ipad-apps-in-javascript
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
 <!----------------------------------------------------------------------------->
-<script type='text/javascript' src='jquery.min.js'></script> <!-- MIT,GPL2 -->
-<script type='text/javascript' src='jquery.ba-hashchange.min.js'></script> <!-- MIT,GPL2 -->
-<script type='text/javascript' src='modernizr.custom.js'></script> <!-- MIT,BSD -->
-<script type='text/javascript' src='safety.js'></script> <!-- MIT -->
-<script type='text/javascript' src='keys.js'></script> <!-- MIT -->
+
+<!-- MIT,GPL2 -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>!window.jQuery && document.write('<script src="jquery.min.js"><\/script>')</script>
+
+<!-- MIT,GPL2 -->
+<script type='text/javascript' src='jquery.ba-hashchange.min.js'></script>
+
+<!-- MIT,BSD -->
+<script type='text/javascript' src='modernizr.custom.js'></script>
+
+<!-- MIT -->
+<script type='text/javascript' src='safety.js'></script>
+<script type='text/javascript' src='keys.js'></script>
+
+<script type='text/javascript'>
+$(document).ready(function(){
+  $('#showToolbar').hide().on('click', function(){
+        $('#showToolbar').fadeOut(50);
+        $('#toolbar').fadeIn(100);
+      });
+  $('#hideToolbar').on('click', function(){
+        $('#toolbar').fadeOut(200);
+        $('#showToolbar').fadeIn(50);
+      });
+});
+</script>
+
 <!----------------------------------------------------------------------------->
+
 <style>
 body {
   background-color: black;
@@ -52,16 +77,16 @@ canvas {
   height: 100%;
 }
 
-#toolbar {
+.toolbar {
   position: fixed;
   right: 0px;
   bottom: 0px;
   opacity: 0.8;
 }
 
-#toolbar button,
-#toolbar select,
-#toolbar option {
+.toolbar button,
+.toolbar select,
+.toolbar option {
   background-color: #444444;
   color: white;
   font-family: helvetica, verdana, sans;
@@ -71,9 +96,11 @@ button,
 select {
   margin: 0px;
   border: solid 2px black;
-  border-radius: 12px;
-  padding-left:  0.9ex;
-  padding-right: 0.9ex;
+  border-radius: 16px;
+  padding-left:  0.7ex;
+  padding-right: 0.7ex;
+  padding-top: 0ex;
+  padding-bottom: 0ex;
 }
 option {
   padding: 0px;
@@ -118,35 +145,41 @@ option:hover {
 }
 
 #canvas { z-index: 0; }
-#toolbar { z-index: 1; }
+#showToolbar { z-index: 1; }
+#toolbar { z-index: 2; }
 </style>
 </head>
 <!----------------------------------------------------------------------------->
 <body>
 <canvas id='canvas'></canvas>
-<div id='toolbar'>
-  <select id='style' title='set visual style' class='roundFlat'>
+<div class='toolbar' id='toolbar'>
+  <a href='http://fritzobermeyer.wordpress.com/2012/01/08/the-rational-keyboard' target='_blank' title='read blog post'><button class='roundFlat'><b>?</b></button></a><!--
+  --><select id='style' title='set visual style' class='flatFlat'>
     <option value='wedges'>wedges</option>
     <option value='piano'>piano</option>
     <option value='thermal'>thermal</option>
     <option value='flow'>flow</option>
   </select><!--
   --><button id='pauseButton' title='pause' class='flatFlat'><b>||</b></button><!--
-  --><a href='http://fritzobermeyer.wordpress.com/2012/01/08/the-rational-keyboard' target='_blank' title='read blog post'><button class='flatRound'><b>?</b></button></a>
+  --><button id='hideToolbar' title='hide toolbar' class='flatRound'><b>x</b></button>
+</div>
+<div class='toolbar' id='showToolbar'>
+  <button title='show toolbar'><b>+</b></button>
 </div>
 </body>
 
 <script type="text/javascript">
 if (location.hostname === 'fritzo.org') {
 
-var _gaq = _gaq || [];
-_gaq.push(['_setAccount', 'UA-28196512-1']);
-_gaq.push(['_trackPageview']);
+var _gaq = [['_setAccount', 'UA-28196512-1'], ['_trackPageview']];
 
 (function() {
-var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  var ga = document.createElement('script');
+  ga.type = 'text/javascript';
+  ga.async = true;
+  ga.src = 'http://www.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(ga, s);
 })();
 
 } // fritzo.org
