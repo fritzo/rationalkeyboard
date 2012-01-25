@@ -31,6 +31,7 @@ var config = {
     sampleRateHz: 22050,
     centerFreqHz: 261.625565, // middle C
     windowSec: 0.2,
+    windowPadding: 0.1, // for better performance in firefox
     onsetGain: 1.0,
     sustainGain: 0.3,
     clickGain: 1.0,
@@ -234,11 +235,13 @@ test('Harmony.updateDiffusion', function(){
 /** @constructor */
 var Synthesizer = function (harmony) {
   var windowMs = 1000 * config.synth.windowSec;
+  var windowSamples = config.synth.windowSec * config.synth.sampleRateHz;
 
   this.harmony = harmony;
   this.delayMs = windowMs / 2;
-  this.windowSamples = Math.floor(
-      config.synth.windowSec * config.synth.sampleRateHz);
+  this.synthSamples = Math.round(
+      windowSamples * (1 - config.synth.windowPadding));
+  this.onsetSamples = Math.round(2 * windowSamples);
   this.sustainGain = config.synth.sustainGain;
   this.onsetGain = config.synth.onsetGain;
   this.numVoices = Math.min(harmony.length, config.synth.numVoices);
@@ -290,7 +293,7 @@ Synthesizer.prototype = {
           'gain': this.sustainGain,
           'freqs': this.freqs,
           'numVoices': this.numVoices,
-          'numSamples': this.windowSamples
+          'numSamples': this.synthSamples
         }
       });
 
@@ -321,12 +324,34 @@ Synthesizer.prototype = {
         });
   },
   play: function (uri) {
+
+    // XXX FIXME TODO there seems to be a bug in chrome here.
+    //   about 5sec after app starts, audio gets choppy.
+    //   goes away when pause-resume (sometimes comes back)
+    //   does not go away when switching screens
+
+    // see
+    // http://www.w3.org/TR/html5/the-iframe-element.html#the-audio-element
+    // http://www.w3.org/TR/html5/the-iframe-element.html#media-elements
+
+    // Version 1. garbage collected
+    //   This sounds better in chrome, but starts clipping after 10s.
     var audio = new Audio(uri);
 
-    // XXX TODO there seems to be a bug here.
-    //   about 20sec after app starts, audio gets choppy.
-    //   goes away when pause-resume
-    //   does not go away when switching screens
+    // Version 2. double buffer
+    //   This clips continuously in chrome.
+    //   This crashes firefox after 15s.
+    //if (this.doubleBuffer === undefined) {
+    //  this.doubleBuffer = [new Audio(), new Audio()];
+    //  this.doubleBuffer[0].preload = true;
+    //  this.doubleBuffer[1].preload = true;
+    //}
+    //this.doubleBuffer.reverse();
+    //var audio = this.doubleBuffer[0];
+    //audio.pause();
+    //audio.src = uri;
+    //audio.load();
+
     var now = Date.now();
     var delay = Math.min(this.delayMs, this.targetTime - now);
     this.targetTime = Math.max(now, this.targetTime + this.delayMs);
@@ -357,7 +382,12 @@ Synthesizer.prototype = {
           var data = e['data'];
           switch (data['type']) {
             case 'wave':
+              // Version 1. new audio object each onset
               onsets[data['index']] = data['data'];
+
+              // Version 2. cached audio objects
+              // This locks up chrome after a while
+              //onsets[data['index']] = new Audio(data['data']);
               break;
 
             case 'log':
@@ -374,16 +404,20 @@ Synthesizer.prototype = {
       'data': {
           'gain': this.onsetGain,
           'freqs': this.freqs,
-          'numSamples': 2 * this.windowSamples,
+          'numSamples': this.onsetSamples,
           'tasks': tasks
         }
       });
   },
-  playOnset: function (index) {
-    var uri = this.onsets[index];
-    if (uri !== undefined) {
-      (new Audio(uri)).play();
+  playOnset: function (index, volume) {
+    var audio = this.onsets[index];
+    if (audio instanceof Audio) {
+      audio.currentTime = 0;
+    } else { // audio is data uri of wav file
+      audio = new Audio(audio);
     }
+    audio.volume = volume;
+    audio.play();
   }
 };
 
@@ -457,22 +491,33 @@ Keyboard.prototype = {
 
     } else {
 
+      var move = function (e) {
+        keyboard.swipeX1 = e.pageX / innerWidth;
+        keyboard.swipeY1 = e.pageY / innerHeight;
+      };
+
       $canvas.on('mousedown.keyboard', function (e) {
             keyboard._swiped = false;
-            keyboard.swipeX0 = keyboard.swipeX1 = e.pageX / window.innerWidth;
-            keyboard.swipeY0 = keyboard.swipeY1 = e.pageY / window.innerHeight;
-            $canvas.on('mousemove.keyboard', function (e) {
-                  keyboard.swipeX1 = e.pageX / window.innerWidth;
-                  keyboard.swipeY1 = e.pageY / window.innerHeight;
-                });
+            keyboard.swipeX0 = keyboard.swipeX1 = e.pageX / innerWidth;
+            keyboard.swipeY0 = keyboard.swipeY1 = e.pageY / innerHeight;
+            $canvas.off('mousemove.keyboard').on('mousemove.keyboard', move);
+            e.preventDefault(); // avoid selecting buttons
+          });
+      $canvas.on('mouseover.keyboard', function (e) {
+            if (e.which) {
+              keyboard._swiped = false;
+              keyboard.swipeX0 = keyboard.swipeX1 = e.pageX / innerWidth;
+              keyboard.swipeY0 = keyboard.swipeY1 = e.pageY / innerHeight;
+              $canvas.off('mousemove.keyboard').on('mousemove.keyboard', move);
+            }
             e.preventDefault(); // avoid selecting buttons
           });
       $canvas.on('mouseup.keyboard', function (e) {
             $canvas.off('mousemove.keyboard');
             if (!keyboard._swiped) {
               keyboard.click(
-                  e.pageX / window.innerWidth,
-                  e.pageY / window.innerHeight);
+                  e.pageX / innerWidth,
+                  e.pageY / innerHeight);
             }
             keyboard._swiped = true;
             e.preventDefault(); // avoid selecting buttons
@@ -532,13 +577,16 @@ Keyboard.prototype = {
   onclick: function (index) {
     this.harmony.updateAddMass(index, config.synth.clickGain);
     if (this.synthesizer !== undefined) {
-      this.synthesizer.playOnset(index);
+      this.synthesizer.playOnset(index, 1);
     }
   },
   onswipe: function (indices) {
     this._swiped = true;
+    var gain = config.synth.swipeGain;
     for (var i = 0, I = indices.length; i < I; ++i) {
-      this.harmony.updateAddMass(indices[i], config.synth.swipeGain);
+      var index = indices[i];
+      this.synthesizer.playOnset(index, gain); // works poorly in firefox
+      this.harmony.updateAddMass(index, gain);
     }
   },
 
