@@ -1,15 +1,16 @@
 /**
  * The Rational Keyboard
  * http://fritzo.org/keys
+ * http://github.com/fritzo/rationalkeyboard
  *
  * Copyright (c) 2012, Fritz Obermeyer
  * Licensed under the MIT license:
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-importScripts('./workerlogger.js');
-importScripts('./safety.js');
-importScripts('./wavencoder.js');
+importScripts('workerlogger.js');
+importScripts('safety.js');
+importScripts('wavencoder.js');
 
 //------------------------------------------------------------------------------
 // Commands

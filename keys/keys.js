@@ -1,6 +1,7 @@
 /**
  * The Rational Keyboard
  * http://fritzo.org/keys
+ * http://github.com/fritzo/rationalkeyboard
  *
  * Copyright (c) 2012, Fritz Obermeyer
  * Licensed under the MIT license:
