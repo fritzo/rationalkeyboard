@@ -1,20 +1,25 @@
 CACHE MANIFEST
-# version 2011-01-19-16-14
+# version 2011-01-25
 
-# use CACHE or NETWORK here
+# use CACHE or NETWoRK here
 CACHE:
 
 # Code
 index.html
 jquery.min.js
 jquery.ba-hashchange.min.js
-modernizr.custom.js
+logger.js
+workerlogger.js
 safety.js
-workersafety.js
+testing.js
 wavencoder.js
-keys.js
-onsetworker.js
+rational.js
+massvector.js
+modernizr.custom.js
+testworker.js
 synthworker.js
+onsetworker.js
+keys.js
 
 # Images
 favicon.ico
@@ -23,6 +28,7 @@ apple-touch-icon-72x72.png
 apple-touch-icon-114x114.png
 
 # External
-http://www.google-analytics.com/ga.js
 http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js
+http://static.addtoany.com/menu/page.js
+http://www.google-analytics.com/ga.js
 

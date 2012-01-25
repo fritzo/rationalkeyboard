@@ -17,44 +17,57 @@
 <link rel="apple-touch-icon" href="apple-touch-icon-57x57.png" />
 <link rel="apple-touch-icon" sizes="72x72" href="apple-touch-icon-72x72.png" />
 <link rel="apple-touch-icon" sizes="114x114" href="appletouch-icon-114x114.png" />
-<!--
-webapp tools as recommended by
-http://matt.might.net/articles/how-to-native-iphone-ipad-apps-in-javascript
--->
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
-<!----------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
 
 <!-- MIT,GPL2 -->
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<script>!window.jQuery && document.write('<script src="jquery.min.js"><\/script>')</script>
+<script>!window.jQuery && document.write('<script src="./jquery.min.js"><\/script>')</script>
 
 <!-- MIT,GPL2 -->
-<script type='text/javascript' src='jquery.ba-hashchange.min.js'></script>
+<script type='text/javascript' src='./jquery.ba-hashchange.min.js'></script>
 
 <!-- MIT,BSD -->
 <script type='text/javascript' src='modernizr.custom.js'></script>
 
-<!-- MIT -->
-<script type='text/javascript' src='safety.js'></script>
-<script type='text/javascript' src='keys.js'></script>
+<!-- MIT,GPL2 -->
+<script type='text/javascript' src='./logger.js'></script>
+<script type='text/javascript' src='./safety.js'></script>
+<script type='text/javascript' src='./testing.js'></script>
+<script type='text/javascript' src='./rational.js'></script>
+<script type='text/javascript' src='./massvector.js'></script>
 
+<!-- MIT -->
+<script type='text/javascript' src='keys.js'></script>
 <script type='text/javascript'>
+
 $(document).ready(function(){
+
   $('#showToolbar').hide().on('click', function(){
         $('#showToolbar').fadeOut(50);
         $('#toolbar').fadeIn(100);
       });
+
   $('#hideToolbar').on('click', function(){
         $('#toolbar').fadeOut(200);
         $('#showToolbar').fadeIn(50);
       });
+
+  $('#showAbout').on('click', function(){
+        $('#about').fadeToggle('fast');
+      });
+
+  $('#aboutShadow').on('click', function(){
+        $('#about').fadeToggle('fast');
+      });
 });
+
 </script>
 
-<!----------------------------------------------------------------------------->
+<!---------------------------------------------------------------------------->
 
 <style>
 body {
@@ -85,10 +98,13 @@ canvas {
 }
 
 .toolbar button,
+.toolbar a,
+.toolbar a:hover,
 .toolbar select,
 .toolbar option {
   background-color: #444444;
   color: white;
+  text-decoration: none;
   font-family: helvetica, verdana, sans;
   font-size: 16px;
 }
@@ -144,35 +160,99 @@ option:hover {
   padding-right: 0.5em;
 }
 
+#about {
+  display: none;
+}
+#aboutShadow {
+  display: block;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+  color: 'rgba(0,0,0,0.5)';
+  background-color: 'rgba(0,0,0,0.5)';
+}
+#aboutText {
+  display: block;
+  position: absolute;
+  width: 80%;
+  top: 10%;
+  left: 10%;
+  font-size: x-large;
+  font-family: Georgia, Serif;
+  text-align: justify;
+  color: #333;
+  background-color: #fff;
+  border: 20px;
+  border-radius: 30px;
+}
+#aboutText p {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
 #canvas { z-index: 0; }
 #showToolbar { z-index: 1; }
 #toolbar { z-index: 2; }
+#aboutText { z-index: 4; }
+#aboutShadow { z-index: 3; }
 </style>
 </head>
 <!----------------------------------------------------------------------------->
 <body>
 <canvas id='canvas'></canvas>
 <div class='toolbar' id='toolbar'>
-  <a href='http://fritzobermeyer.wordpress.com/2012/01/08/the-rational-keyboard' target='_blank' title='read blog post'><button class='roundFlat'><b>?</b></button></a><!--
+  <button id='showAbout' class='roundFlat' title='about The Rational Keyboard'><b>?</b></button></a><!--
+  --><a class="a2a_dd" href="http://www.addtoany.com/share_save?linkurl=http%3A%2F%2Ffritzo.org%2Fkeys&amp;linkname=The%20Rational%20Keyboard" title='share'><button class='flatFlat'><b>+</b></button></a><!--
+  --><button id='pauseButton' title='pause' class='flatFlat'><b>||</b></button><!--
   --><select id='style' title='set visual style' class='flatFlat'>
     <option value='wedges'>wedges</option>
     <option value='piano'>piano</option>
     <option value='thermal'>thermal</option>
     <option value='flow'>flow</option>
   </select><!--
-  --><button id='pauseButton' title='pause' class='flatFlat'><b>||</b></button><!--
-  --><button id='hideToolbar' title='hide toolbar' class='flatRound'><b>x</b></button>
+  --><button id='hideToolbar' title='hide toolbar' class='flatRound'><b>&#x000b7;</b></button>
 </div>
 <div class='toolbar' id='showToolbar'>
   <button title='show toolbar'><b>+</b></button>
 </div>
-</body>
 
+<div id='about'>
+  <div id='aboutShadow'></div>
+  <div id='aboutText'>
+    <p>
+    The Rational Keyboard is a browser app to play with harmony on the rational number line.
+    It's kind of like a piano with infinitely many keys that move around and resize based on what sounds good.
+    </p>
+    <p>
+    Audio is synthesized in background Web Worker threads and played with HTML5 Audio objects,
+    and the interactive visualizations use a 2D HTML5 Canvas.
+    Audio seems to work best in recent Firefox and Chrome releases.
+    </p>
+
+    <p>
+      Made in Vietnam :)
+    </p>
+  </div>
+</div>
+
+</body>
+<script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+
+<!-- Lockerz Share -->
+<script type="text/javascript">
+var a2a_config = a2a_config || {};
+a2a_config.linkname = "The Rational Keyboard";
+a2a_config.linkurl = "http://fritzo.org/keys";
+a2a_config.onclick = 1;
+</script>
+<script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+
+<!-- Google Analytics -->
 <script type="text/javascript">
 if (location.hostname === 'fritzo.org') {
-
 var _gaq = [['_setAccount', 'UA-28196512-1'], ['_trackPageview']];
-
 (function() {
   var ga = document.createElement('script');
   ga.type = 'text/javascript';
@@ -181,7 +261,6 @@ var _gaq = [['_setAccount', 'UA-28196512-1'], ['_trackPageview']];
   var s = document.getElementsByTagName('script')[0];
   s.parentNode.insertBefore(ga, s);
 })();
-
 } // fritzo.org
 </script>
 

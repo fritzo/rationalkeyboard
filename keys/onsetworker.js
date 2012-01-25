@@ -1,4 +1,4 @@
-/*
+/**
  * The Rational Keyboard
  * http://fritzo.org/keys
  *
@@ -7,8 +7,9 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-importScripts('workersafety.js');
-importScripts('wavencoder.js');
+importScripts('./workerlogger.js');
+importScripts('./safety.js');
+importScripts('./wavencoder.js');
 
 //------------------------------------------------------------------------------
 // Commands
@@ -52,7 +53,7 @@ var synthesize = function (f) {
   }
 
   var uri = self.wavEncoder.encode(samples);
-  self.postMessage({type:'wave', index:f, data:uri});
+  self.postMessage({'type':'wave', 'index':f, 'data':uri});
 };
 
 //------------------------------------------------------------------------------
@@ -60,19 +61,19 @@ var synthesize = function (f) {
 
 self.addEventListener('message', function (e) {
   try {
-    var data = e.data;
-    switch (data.cmd) {
+    var data = e['data'];
+    switch (data['cmd']) {
 
       case 'init':
-        init(data.data);
+        init(data['data']);
         break;
 
       default:
-        throw 'unknown command: ' + e.data.cmd;
+        throw 'unknown command: ' + data['cmd'];
     }
   }
   catch (err) {
-    self.postMessage({type:'error', data:err.toString()});
+    self.postMessage({'type':'error', 'data':err.toString()});
   }
 }, false);
 

@@ -1,4 +1,4 @@
-/*
+/**
  * The Rational Keyboard
  * http://fritzo.org/keys
  *
@@ -7,6 +7,7 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
+/** @const */
 var config = {
   harmony: {
     //maxRadius: 11.44, // 63 keys
@@ -50,10 +51,6 @@ var config = {
       textHeight: 28
     },
     defaultStyle: 'piano'
-  },
-
-  test: {
-    interactive: false
   }
 };
 
@@ -64,9 +61,18 @@ var verifyBrowser = function () {
   if (!Modernizr.webworkers) missing.push('web workers');
 
   if (missing.length) {
-    var message = 'The Rational Keyboard ' +
-        'needs some features not available in your browser: ' +
-        missing.join(', ') + '.';
+    var message = [
+        '<p>The Rational Keyboard ',
+        'needs features not available in your browser: ',
+        '<ul><li>',
+        missing.join('</li><li>'),
+        '</li></ul>',
+        '</p>',
+        '<p>',
+        'User Agent String = ',
+        navigator.userAgent,
+        '</p>'].join('');
+
     $(document.body).empty().html(message).attr('class', 'warning');
 
     return false;
@@ -76,299 +82,9 @@ var verifyBrowser = function () {
 };
 
 //------------------------------------------------------------------------------
-// Rational numbers (more precisely, extended nonnegative rational pairs)
-
-var gcd = function (a,b)
-{
-  if (testing) {
-    assert(a >= 0, 'gcd arg 1 is not positive: ' + a);
-    assert(b >= 0, 'gcd arg 2 is not positive: ' + b);
-    assert(a % 1 === 0, 'gcd arg 1 is not an integer: ' + a);
-    assert(b % 1 === 0, 'gcd arg 2 is not an integer: ' + b);
-  }
-
-  if (b > a) { var temp = a; a = b; b = temp; }
-  if (b === 0) return 1;
-
-  while (true) {
-    a %= b;
-    if (a === 0) return b;
-    b %= a;
-    if (b === 0) return a;
-  }
-};
-test('assert(gcd(0,0) === 1)');
-test('assert(gcd(1,1) === 1)');
-test('assert(gcd(1,2) === 1)');
-test('assert(gcd(2,2) === 2)');
-test('assert(gcd(4,6) === 2)');
-test('assert(gcd(0,7) === 1)');
-
-var Rational = function (m,n) {
-  if (testing) {
-    assert(0 <= m && m % 1 == 0, 'invalid numer: ' + m);
-    assert(0 <= n && n % 1 == 0, 'invalid denom: ' + n);
-    assert(m || n, '0/0 is not a Rational');
-  }
-
-  var g = gcd(m,n);
-  this.numer = m / g;
-  this.denom = n / g;
-
-  if (testing) {
-    assert(this.numer % 1 === 0, 'bad Rational.numer: ' + this.numer);
-    assert(this.denom % 1 === 0, 'bad Rational.denom: ' + this.denom);
-  }
-};
-
-Rational.prototype = {
-  toNumber: function () {
-    return this.numer / this.denom;
-  },
-  recip: function () {
-    return new Rational(this.denom, this.numer);
-  },
-  normSquared: function () {
-    return this.numer * this.numer + this.denom * this.denom;
-  },
-  norm: function () {
-    return Math.sqrt(this.numer * this.numer + this.denom * this.denom);
-  },
-  isNormal: function () {
-    return this.numer !== 0 && this.denom !== 0;
-  }
-};
-
-Rational.ZERO = new Rational(0,1);
-Rational.INF = new Rational(1,0);
-Rational.ONE = new Rational(1,1);
-
-Rational.mul = function (lhs, rhs) {
-  return new Rational(lhs.numer * rhs.numer, lhs.denom * rhs.denom);
-};
-Rational.div = function (lhs, rhs) {
-  return new Rational(lhs.numer * rhs.denom, lhs.denom * rhs.numer);
-};
-Rational.add = function (lhs, rhs) {
-  return new Rational(
-      lhs.numer * rhs.denom + lhs.denom * rhs.numer,
-      lhs.denom * rhs.denom);
-};
-
-Rational.cmp = function (lhs, rhs) {
-  return lhs.numer * rhs.denom - rhs.numer * lhs.denom;
-};
-
-Rational.distSquared = function (lhs, rhs) {
-  return Rational.div(lhs, rhs).normSquared();
-};
-Rational.dist = function (lhs, rhs) {
-  return Rational.div(lhs, rhs).norm();
-};
-
-Rational.ball = function (radius) {
-  var result = [];
-  for (var i = 1; i <= radius; ++i) {
-    for (var j = 1; j*j + i*i <= radius*radius; ++j) {
-      if (gcd(i,j) === 1) {
-        result.push(new Rational(i,j));
-      }
-    }
-  }
-  result.sort(Rational.cmp);
-  return result;
-};
-
-test('Rational.ball', function(){
-  var actual = Rational.ball(4).map(function(q){ return q.toNumber(); });
-  var expected = [1/3, 1/2, 2/3, 1/1, 3/2, 2/1, 3/1];
-  assertEqual(actual, expected);
-});
-
-test('Rational.ball of size 88', function(){
-  var target = 191; // needs to be odd; 88 is even
-  var f = function(r) { return Rational.ball(r).length; }
-
-  var r0, r1;
-  for (r0 = 3; f(r0) >= target; --r0);
-  for (r1 = 3; f(r1) <= target; ++r1);
-
-  var r;
-  while (r0 < r1) {
-    var r = (r0 + r1) / 2;
-    var n = f(r);
-    if (r0 === r1) break;
-    if (n === target) break;
-    if (n < target) r0 = r;
-    else r1 = r;
-  }
-
-  if (f(Math.round(r)) === target) r = Math.round(r);
-  log('Rational.ball(' + r + ').length = ' + target);
-});
-
-//----------------------------------------------------------------------------
-// Probability vectors
-
-var Lmf = function (initProbs) {
-  if (initProbs instanceof Array) {
-    this.likes = initProbs.slice();
-  } else {
-    this.likes = [];
-  }
-};
-
-Lmf.prototype = {
-
-  total: function () {
-    var likes = this.likes;
-    var result = 0;
-    for (var i = 0, I = likes.length; i < I; ++i) {
-      result += likes[i];
-    }
-    return result;
-  },
-
-  normalize: function () {
-    var total = this.total();
-    assert(0 < total, 'cannont normalize Lmf with zero mass');
-    var scale = 1.0 / total;
-    var likes = this.likes;
-    for (var i = 0, I = likes.length; i < I; ++i) {
-      likes[i] *= scale;
-    }
-  },
-
-  scale: function (s) {
-    var likes = this.likes;
-    for (var i = 0, I = likes.length; i < I; ++i) {
-      likes[i] *= s;
-    }
-  },
-
-  dot: function (values) {
-    var likes = this.likes;
-    //assert(values.length === likes.length, 'mismatched length in Lmf.dot');
-    var result = 0;
-    for (var i = 0, I = likes.length; i < I; ++i) {
-      result += likes[i] * values[i];
-    }
-    return result;
-  },
-
-  shiftTowards: function (other, rate) {
-    var likes0 = this.likes;
-    var likes1 = other.likes;
-    assert(likes0.length === likes1.length,
-        'mismatched lengths in Lmf.shiftTowards');
-    assert(0 <= rate && rate <= 1,
-        'bad rate in Lmf.shiftTowards: ' + rate);
-
-    var w0 = 1 - rate;
-    var w1 = rate;
-    for (var i = 0, I = likes0.length; i < I; ++i) {
-      likes0[i] = w0 * likes0[i] + w1 * likes1[i];
-    }
-  },
-
-  truncate: function (thresh) {
-    var oldLikes = this.likes;
-    var newLikes = this.likes = [];
-    var indices = [];
-    for (var i = 0, I = oldLikes.length, J = 0; i < I; ++i) {
-      var like = oldLikes[i] - thresh;
-      if (like > 0) {
-        newLikes[J] = like;
-        indices[J++] = i;
-      }
-    }
-    return indices;
-  }
-};
-
-Lmf.zero = function (N) {
-  assert(0 < N, 'bad length in Lmf.zero: ' + N);
-  var result = new Lmf();
-  var likes = result.likes;
-  for (var i = 0; i < N; ++i) {
-    likes[i] = 0;
-  }
-  return result;
-};
-
-Lmf.degenerate = function (n, N) {
-  assert(0 <= n && n < N, 'bad indices in Lmf.denerate: ' + n + ', ' + N);
-  var result = new Lmf();
-  var likes = result.likes;
-  for (var i = 0; i < N; ++i) {
-    likes[i] = 0;
-  }
-  likes[n] = 1;
-  return result;
-};
-
-Lmf.multiply = function (lhs, rhs) {
-  assert(lhs.length === rhs.length,
-      'length mismatch in Lmf.multiply');
-
-  var result = new Lmf();
-  x = lhs.likes;
-  y = rhs.likes;
-  var xy = result.likes;
-  for (var i = 0, I = x.length; i < I; ++i) {
-    xy[i] = x[i] * y[i];
-  }
-  return result;
-};
-
-Lmf.boltzmann = function (energy, temperature) {
-  if (temperature === undefined) temperature = 1;
-  assert(0 < temperature, 'temperature is not positive: ' + temperature);
-  var result = new Lmf();
-  var likes = result.likes;
-  for (var i = 0, I = energy.length; i < I; ++i) {
-    likes[i] = Math.exp(-energy[i] / temperature);
-  }
-  result.normalize();
-  return result;
-};
-
-test('Lmf.normalize', function(){
-  var pmf = new Lmf();
-  for (var i = 0; i < 3; ++i) {
-    pmf.likes[i] = i;
-  }
-  pmf.normalize();
-  assertEqual(pmf.likes, [0,1/3,2/3]);
-});
-
-test('assertEqual(Lmf.zero(3).likes, [0,0,0])');
-test('assertEqual(Lmf.degenerate(1,4).likes, [0,1,0,0])');
-test('Lmf.multiply', function(){
-  var x = new Lmf([0,1,2,3]);
-  var y = new Lmf([3,2,1,0]);
-  assertEqual(Lmf.multiply(x,y).likes, [0,2,2,0]);
-});
-
-test('new Lmf(init)', function(){
-  var init = [1,2,3];
-  var pmf = new Lmf(init);
-  pmf.normalize();
-  assertEqual(init, [1,2,3], 'init was changed');
-  assertEqual(pmf.likes, [1/6,2/6,3/6], 'likes is invalid');
-});
-
-test('Lmf.shiftTowards', function(){
-  var p0 = new Lmf([0,0,1]);
-  var p1 = new Lmf([0,1/2,1/2]);
-  var rate = 1/3;
-  p0.shiftTowards(p1, rate);
-  assertEqual(p0.likes, [0, 1/6, 5/6]);delaySec: 0.05
-});
-
-//------------------------------------------------------------------------------
 // Harmony
 
+/** @constructor */
 var Harmony = function (radius) {
   this.priorRateKhz = 1e-3 / config.harmony.priorSec;
   this.sustainRateKhz = 1e-3 / config.harmony.sustainSec;
@@ -397,9 +113,9 @@ var Harmony = function (radius) {
   }
 
   assert(this.length % 2, 'harmony does not have an odd number of points');
-  this.mass = Lmf.degenerate((this.length - 1) / 2, this.length);
-  this.dmass = Lmf.zero(this.length);
-  this.prior = Lmf.boltzmann(this.getEnergy(this.mass));
+  this.mass = MassVector.degenerate((this.length - 1) / 2, this.length);
+  this.dmass = MassVector.zero(this.length);
+  this.prior = MassVector.boltzmann(this.getEnergy(this.mass));
 
   this.running = false;
 };
@@ -437,7 +153,7 @@ Harmony.prototype = {
     this.lastTime = now;
 
     var priorRate = 1 - Math.exp(-dt * this.priorRateKhz);
-    var newPrior = Lmf.boltzmann(this.getEnergy(this.mass));
+    var newPrior = MassVector.boltzmann(this.getEnergy(this.mass));
     this.prior.shiftTowards(newPrior, priorRate);
 
     var sustainRate = 1 - Math.exp(-dt * this.sustainRateKhz);
@@ -514,6 +230,7 @@ test('Harmony.updateDiffusion', function(){
 //------------------------------------------------------------------------------
 // Synthesis
 
+/** @constructor */
 var Synthesizer = function (harmony) {
   var windowMs = 1000 * config.synth.windowSec;
 
@@ -549,30 +266,30 @@ Synthesizer.prototype = {
 
     this.synthworker = new Worker('synthworker.js');
     this.synthworker.addEventListener('message', function (e) {
-          var data = e.data;
-          switch (data.type) {
+          var data = e['data'];
+          switch (data['type']) {
             case 'wave':
-              synth.play(data.data);
+              synth.play(data['data']);
               synth.profileCount += 1;
-              synth.profileElapsed += data.profileElapsed;
+              synth.profileElapsed += data['profileElapsed'];
               break;
 
             case 'log':
-              log('Synth Worker: ' + data.data);
+              log('Synth Worker: ' + data['data']);
               break;
 
             case 'error':
-              log('Synth Worker Error: ' + data.data);
+              log('Synth Worker Error: ' + data['data']);
               break;
           }
         }, false);
     this.synthworker.postMessage({
-      cmd: 'init',
-      data: {
-          gain: this.sustainGain,
-          freqs: this.freqs,
-          numVoices: this.numVoices,
-          numSamples: this.windowSamples
+      'cmd': 'init',
+      'data': {
+          'gain': this.sustainGain,
+          'freqs': this.freqs,
+          'numVoices': this.numVoices,
+          'numSamples': this.windowSamples
         }
       });
 
@@ -597,7 +314,10 @@ Synthesizer.prototype = {
 
   update: function () {
     var mass = this.harmony.mass.likes;
-    this.synthworker.postMessage({cmd:'synthesize', data:mass});
+    this.synthworker.postMessage({
+          'cmd': 'synthesize',
+          'data': mass
+        });
   },
   play: function (uri) {
     var audio = new Audio(uri);
@@ -633,28 +353,28 @@ Synthesizer.prototype = {
 
     var onsetworker = new Worker('onsetworker.js');
     onsetworker.addEventListener('message', function (e) {
-          var data = e.data;
-          switch (data.type) {
+          var data = e['data'];
+          switch (data['type']) {
             case 'wave':
-              onsets[data.index] = data.data;
+              onsets[data['index']] = data['data'];
               break;
 
             case 'log':
-              log('Onset Worker: ' + data.data);
+              log('Onset Worker: ' + data['data']);
               break;
 
             case 'error':
-              log('Onset Worker Error: ' + data.data);
+              log('Onset Worker Error: ' + data['data']);
               break;
           }
         }, false);
     onsetworker.postMessage({
-      cmd: 'init',
-      data: {
-          gain: this.onsetGain,
-          freqs: this.freqs,
-          numSamples: 2 * this.windowSamples,
-          tasks: tasks
+      'cmd': 'init',
+      'data': {
+          'gain': this.onsetGain,
+          'freqs': this.freqs,
+          'numSamples': 2 * this.windowSamples,
+          'tasks': tasks
         }
       });
   },
@@ -667,7 +387,7 @@ Synthesizer.prototype = {
 };
 
 test('web worker echo', function(){
-  var message = {a:0, b:[0,1,2], c:'asdf', d:{}}; // just some JSON
+  var message = {'a':0, 'b':[0,1,2], 'c':'asdf', d:{}}; // just some JSON
   var received = false;
   var error = null;
 
@@ -695,6 +415,7 @@ test('web worker echo', function(){
 //------------------------------------------------------------------------------
 // Visualization
 
+/** @constructor */
 var Keyboard = function (harmony, synthesizer) {
   this.harmony = harmony;
   this.synthesizer = synthesizer;
@@ -899,8 +620,9 @@ test('Keyboard.swipe', function(){
 //----------------------------------------------------------------------------
 // Visualization: Temperature
 
-Keyboard.styles.thermal = {
+Keyboard.styles['thermal'] = {
 
+  /** @this {Keyboard} */
   updateGeometry: function () {
     var X = this.harmony.length;
     var Y = Math.floor(2 + Math.sqrt(window.innerHeight));
@@ -911,7 +633,7 @@ Keyboard.styles.thermal = {
     var geometryYX = [];
     for (var y = 0; y < Y; ++y) {
       var temperature = 1 / (1 - 0.8 * y / (Y-1));
-      var width = Lmf.boltzmann(energy, temperature).likes;
+      var width = MassVector.boltzmann(energy, temperature).likes;
 
       var geom = geometryYX[y] = [0];
       for (var x = 0; x < X; ++x) {
@@ -940,6 +662,7 @@ Keyboard.styles.thermal = {
     }
   },
 
+  /** @this {Keyboard} */
   draw: function () {
     var geom = this.geometry;
     var color = this.color;
@@ -1004,6 +727,7 @@ Keyboard.styles.thermal = {
     }
   },
 
+  /** @this {Keyboard} */
   click: function (x01, y01) {
     var geom = this.geometry;
     var X = geom.length - 1;
@@ -1029,8 +753,9 @@ Keyboard.styles.thermal = {
 //----------------------------------------------------------------------------
 // Visualization: Flow graph
 
-Keyboard.styles.flow = {
+Keyboard.styles['flow'] = {
 
+  /** @this {Keyboard} */
   updateGeometry: function () {
     var keyThresh = 1e-3;
     var keyExponent = 8;
@@ -1040,7 +765,7 @@ Keyboard.styles.flow = {
         2 + Math.sqrt(window.innerHeight + window.innerWidth));
 
     var energy = this.harmony.getEnergy(this.harmony.prior);
-    var probs = Lmf.boltzmann(energy);
+    var probs = MassVector.boltzmann(energy);
 
     var keys = this.keys = probs.truncate(keyThresh);
     var K = keys.length;
@@ -1051,7 +776,7 @@ Keyboard.styles.flow = {
 
     // vertical bands of varying width
     var geometryYX = [];
-    var width = new Lmf();
+    var width = new MassVector();
     var widthLikes = width.likes;
     for (var y = 0; y < Y; ++y) {
       var y01 = (y + 0.5) / Y * (1 - 0.5 / keyExponent);
@@ -1091,6 +816,7 @@ Keyboard.styles.flow = {
     }
   },
 
+  /** @this {Keyboard} */
   draw: function () {
     var geom = this.geometry;
     var color = this.color;
@@ -1163,6 +889,7 @@ Keyboard.styles.flow = {
     }
   },
 
+  /** @this {Keyboard} */
   click: function (x01, y01) {
     var geom = this.geometry;
     var K = geom.length - 1;
@@ -1188,18 +915,19 @@ Keyboard.styles.flow = {
 //----------------------------------------------------------------------------
 // Visualization: piano
 
-Keyboard.styles.piano = {
+Keyboard.styles['piano'] = {
 
+  /** @this {Keyboard} */
   updateGeometry: function () {
-    var keyThresh = config.keyboard.piano.keyThresh;
-    var temperature = config.keyboard.piano.temperature;
+    var keyThresh = config.keyboard['piano'].keyThresh;
+    var temperature = config.keyboard['piano'].temperature;
 
     var X = this.harmony.length;
     var Y = Math.floor(
         2 + Math.sqrt(window.innerHeight + window.innerWidth));
 
     var energy = this.harmony.getEnergy(this.harmony.prior);
-    var probs = Lmf.boltzmann(energy);
+    var probs = MassVector.boltzmann(energy);
 
     var keys = probs.truncate(keyThresh);
     var K = keys.length;
@@ -1313,6 +1041,7 @@ Keyboard.styles.piano = {
     }
   },
 
+  /** @this {Keyboard} */
   draw: function () {
     var keys = this.keys;
     var depthSorted = this.depthSorted;
@@ -1331,7 +1060,7 @@ Keyboard.styles.piano = {
     var K = keys.length;
     var W = window.innerWidth;
     var H = window.innerHeight;
-    var R = config.keyboard.piano.cornerRadius;
+    var R = config.keyboard['piano'].cornerRadius;
 
     context.clearRect(0, 0, W, H);
     var fracBars = this.fracBars;
@@ -1408,6 +1137,7 @@ Keyboard.styles.piano = {
     }
   },
 
+  /** @this {Keyboard} */
   click: function (x01, y01) {
     var keys = this.keys;
     var depthSorted = this.depthSorted;
@@ -1427,6 +1157,7 @@ Keyboard.styles.piano = {
       }
     }
   },
+  /** @this {Keyboard} */
   updateSwipe: function () {
     var x0 = this.swipeX0;
     var y0 = this.swipeY0;
@@ -1464,18 +1195,19 @@ Keyboard.styles.piano = {
 //----------------------------------------------------------------------------
 // Visualization: wedges
 
-Keyboard.styles.wedges = {
+Keyboard.styles['wedges'] = {
 
+  /** @this {Keyboard} */
   updateGeometry: function () {
-    var keyThresh = config.keyboard.wedges.keyThresh;
-    var temperature = config.keyboard.wedges.temperature;
+    var keyThresh = config.keyboard['wedges'].keyThresh;
+    var temperature = config.keyboard['wedges'].temperature;
 
     var X = this.harmony.length;
     var Y = Math.floor(
         2 + Math.sqrt(window.innerHeight + window.innerWidth));
 
     var energy = this.harmony.getEnergy(this.harmony.prior);
-    var probs = Lmf.boltzmann(energy);
+    var probs = MassVector.boltzmann(energy);
 
     if (this.pitches === undefined) {
       var pitches = this.harmony.points.map(function(q){
@@ -1512,7 +1244,7 @@ Keyboard.styles.wedges = {
       }
     }
 
-    var makeRoomForText = 1 - config.keyboard.wedges.textHeight / innerHeight;
+    var makeRoomForText = 1 - config.keyboard['wedges'].textHeight / innerHeight;
     for (var k = 0; k < K; ++k) {
       ypos[k] *= makeRoomForText;
     }
@@ -1570,6 +1302,7 @@ Keyboard.styles.wedges = {
     }
   },
 
+  /** @this {Keyboard} */
   draw: function () {
     var keys = this.keys;
     var depthSorted = this.depthSorted;
@@ -1589,7 +1322,7 @@ Keyboard.styles.wedges = {
     var K = keys.length;
     var W = window.innerWidth;
     var H = window.innerHeight;
-    var R = config.keyboard.wedges.cornerRadius;
+    var R = config.keyboard['wedges'].cornerRadius;
 
     context.clearRect(0, 0, W, H);
     var fracBars = this.fracBars;
@@ -1639,6 +1372,7 @@ Keyboard.styles.wedges = {
     }
   },
 
+  /** @this {Keyboard} */
   click: function (x01, y01) {
     var keys = this.keys;
     var depthSorted = this.depthSorted;
@@ -1660,6 +1394,7 @@ Keyboard.styles.wedges = {
       }
     }
   },
+  /** @this {Keyboard} */
   updateSwipe: function () {
     var x0 = this.swipeX0;
     var y0 = this.swipeY0;
@@ -1709,21 +1444,9 @@ test('main', function(){
   synthesizer.start();
   keyboard.start();
 
-  try {
-    if(config.test.interactive) {
-      TODO('implement an asynchronous query dialog box');
-      assert(confirm('do you hear a tone?'),
-          'synthesizer did not make a tone');
-      assert(confirm('do you see a keyboard?'),
-          'keyboard was not drawn correctly');
-    }
-  }
-
-  finally {
-    keyboard.stop();
-    synthesizer.stop();
-    harmony.stop();
-  }
+  keyboard.stop();
+  synthesizer.stop();
+  harmony.stop();
 });
 
 $(document).ready(function(){
@@ -1742,13 +1465,6 @@ $(document).ready(function(){
     if (window.location.hash.substr(1) === 'test') {
       document.title = 'The Rational Keyboard - Unit Test';
       $('#toolbar').hide();
-      test.runAll();
-      return;
-    }
-    else if (window.location.hash.substr(1) === 'test=interactive') {
-      document.title = 'The Rational Keyboard - Interactive Unit Test';
-      $('#toolbar').hide();
-      config.test.interactive = true;
       test.runAll();
       return;
     }
