@@ -13,6 +13,8 @@ var MassVector = function (initProbs) {
   if (initProbs instanceof Array) {
     this.likes = initProbs.slice();
   } else {
+    assert(initProbs === undefined,
+        'bad initial masses: ' + JSON.stringify(initProbs));
     this.likes = [];
   }
 };
@@ -96,7 +98,8 @@ MassVector.zero = function (N) {
 };
 
 MassVector.degenerate = function (n, N) {
-  assert(0 <= n && n < N, 'bad indices in MassVector.denerate: ' + n + ', ' + N);
+  assert(0 <= n && n < N,
+      'bad indices in MassVector.denerate: ' + n + ', ' + N);
   var result = new MassVector();
   var likes = result.likes;
   for (var i = 0; i < N; ++i) {

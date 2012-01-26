@@ -9,6 +9,6 @@
  */
 
 var log = function (message) {
-  self.postMessage({type:'log', data:message});
+  self.postMessage({'type':'log', 'data':message});
 };
 

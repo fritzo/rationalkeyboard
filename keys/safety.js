@@ -77,3 +77,11 @@ var typedFun = function (argTypes, returnType, fun) {
   });
 };
 
+/** @constructor */
+var WorkerException = function (message) {
+  this.message = message || '(unspecified)';
+};
+WorkerException.prototype.toString = function () {
+  return 'Worker Error: ' + this.message;
+};
+

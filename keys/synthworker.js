@@ -16,14 +16,14 @@ importScripts('wavencoder.js');
 // Commands
 
 var init = function (data) {
-  self.gain = data.gain;
-  self.freqs = data.freqs;
+  self.gain = data['gain'];
+  self.freqs = data['freqs'];
   self.centerFreq = self.freqs[(self.freqs.length - 1) / 2];
-  self.numVoices = data.numVoices;
+  self.numVoices = data['numVoices'];
   self.F = self.freqs.length;
-  self.T = data.numSamples;
+  self.T = data['numSamples'];
 
-  self.wavEncoder = new WavEncoder(data.numSamples);
+  self.wavEncoder = new WavEncoder(data['numSamples']);
   self.samples = new Array(self.T);
   self.amps = new Array(self.F);
   self.best = new Array(self.F);

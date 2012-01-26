@@ -16,15 +16,15 @@ importScripts('wavencoder.js');
 // Commands
 
 var init = function (data) {
-  self.gain = data.gain;
-  self.freqs = data.freqs;
+  self.gain = data['gain'];
+  self.freqs = data['freqs'];
   self.centerFreq = self.freqs[(self.freqs.length - 1) / 2];
-  self.T = data.numSamples;
+  self.T = data['numSamples'];
 
-  self.wavEncoder = new WavEncoder(data.numSamples);
+  self.wavEncoder = new WavEncoder(data['numSamples']);
   self.samples = new Array(self.T);
 
-  var tasks = data.tasks;
+  var tasks = data['tasks'];
   assertEqual(tasks.length, self.freqs.length,
       'tasks.length does not match freqs.length');
 
