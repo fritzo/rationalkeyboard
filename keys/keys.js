@@ -19,12 +19,12 @@ var config = {
     //maxRadius: 21, // 207 keys
     maxRadius: Math.sqrt(24*24 + 1*1 + 1e-4), // 279 keys
     priorSec: 8.0,
-    priorRadius: 3,
-    priorWidthOctaves: 4.0,
+    acuity: 3,
     sustainSec: 1.0,
     attackSec: 0.1,
     backgroundGain: 0.3,
-    updateHz: 60
+    updateHz: 60,
+    randomizeRate: 0,
   },
 
   synth: {
@@ -92,10 +92,9 @@ var Harmony = function (radius) {
   this.sustainRateKhz = 1e-3 / config.harmony.sustainSec;
   this.attackKhz = 1e-3 / config.harmony.attackSec;
   this.backgroundGain = config.harmony.backgroundGain;
-  this.priorRadius = config.harmony.priorRadius;
-  this.logFreqVariance =
-    Math.pow(config.harmony.priorWidthOctaves * Math.log(2), 2);
+  this.acuity = config.harmony.acuity;
   this.delayMs = 1000 / config.harmony.updateHz;
+  this.randomizeRate = config.harmony.randomizeRate;
 
   this.points = Rational.ball(radius);
   this.length = this.points.length;
@@ -106,12 +105,6 @@ var Harmony = function (radius) {
     for (var j = 0; j < this.length; ++j) {
       row[j] = Rational.dist(this.points[i], this.points[j]);
     }
-  }
-
-  var freqEnergy = this.freqEnergy = [];
-  for (var i = 0; i < this.length; ++i) {
-    var logFreq = Math.log(this.points[i].toNumber());
-    freqEnergy[i] = 0.5 * logFreq * logFreq / this.logFreqVariance;
   }
 
   assert(this.length % 2, 'harmony does not have an odd number of points');
@@ -170,6 +163,14 @@ Harmony.prototype = {
       likes[i] += attackRate * (dlikes[i] *= attackDecay);
     }
 
+    if (this.randomizeRate) {
+      var sigma = this.randomizeRate * Math.sqrt(dt / 1000) * Math.sqrt(12);
+      var total = this.mass.total();
+      for (var i = 0, I = likes.length; i < I; ++i) {
+        likes[i] *= Math.exp(sigma * (Math.random() - 0.5));
+      }
+    }
+
     if (this.running) {
       var harmony = this;
       this.updateTask = setTimeout(function(){
@@ -187,11 +188,10 @@ Harmony.prototype = {
 
   getEnergy: function (mass) {
     var energyMatrix = this.energyMatrix;
-    var freqEnergy = this.freqEnergy;
-    var radiusScale = 1 / mass.total() / this.priorRadius;
+    var radiusScale = 1 / mass.total() / this.acuity;
     var energy = [];
     for (var i = 0, I = this.length; i < I; ++i) {
-      energy[i] = radiusScale * mass.dot(energyMatrix[i]) + freqEnergy[i];
+      energy[i] = radiusScale * mass.dot(energyMatrix[i]);
     }
     return energy;
   }
@@ -1519,6 +1519,11 @@ $(document).ready(function(){
     }
     else if (window.location.hash.substr(1,6) === 'style=') {
       style = window.location.hash.substr(7);
+    }
+    else if (window.location.hash.substr(1,7) === 'random=') {
+      var randomizeRate = parseFloat(window.location.hash.substr(8))
+      log('setting randomize rate = ' + randomizeRate);
+      config.harmony.randomizeRate = randomizeRate;
     }
   }
 

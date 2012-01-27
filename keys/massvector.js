@@ -9,14 +9,8 @@
  */
 
 /** @constructor */
-var MassVector = function (initProbs) {
-  if (initProbs instanceof Array) {
-    this.likes = initProbs.slice();
-  } else {
-    assert(initProbs === undefined,
-        'bad initial masses: ' + JSON.stringify(initProbs));
-    this.likes = [];
-  }
+var MassVector = function (init) {
+  this.likes = init === undefined ? [] : new Array(init);
 };
 
 MassVector.prototype = {
@@ -30,10 +24,10 @@ MassVector.prototype = {
     return result;
   },
 
-  normalize: function () {
+  normalize: function (targetTotal) {
     var total = this.total();
-    assert(0 < total, 'cannont normalize MassVector with zero mass');
-    var scale = 1.0 / total;
+    assert(0 < total, 'cannot normalize MassVector with zero mass');
+    var scale = (targetTotal || 1) / total;
     var likes = this.likes;
     for (var i = 0, I = likes.length; i < I; ++i) {
       likes[i] *= scale;
