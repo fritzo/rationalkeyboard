@@ -45,7 +45,7 @@
 <script type='text/javascript' src='keys.js'></script>
 <script type='text/javascript'>
 
-$(document).ready(function(){
+$(function(){
 
   $('#showToolbar').hide().on('click', function(){
         $('#showToolbar').fadeOut(50);
@@ -250,9 +250,10 @@ canvas {
     Imagine a piano with infinitely many keys, one for each rational number, and the keys move around and resize based on what sounds good.
     </p>
     <p>
-    Audio is synthesized in background Web Workers and played with HTML5 Audio objects,
+    Audio is synthesizes audio in background Web Workers and played with HTML5 Audio objects,
     and the interactive visualizations use a 2D HTML5 Canvas.
     Audio seems to work best in recent Firefox and Chrome releases.
+    Sometimes pausing helps to unglitch audio.
     </p>
 
     <p>

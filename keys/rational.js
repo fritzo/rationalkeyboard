@@ -22,7 +22,7 @@ var gcd = function (a,b)
   }
 
   if (b > a) { var temp = a; a = b; b = temp; }
-  if (b === 0) return 1;
+  if (b === 0) return 1; // gcd(0,anything) = 0
 
   while (true) {
     a %= b;
@@ -183,7 +183,7 @@ Rational.cmp = function (lhs, rhs) {
  * @param {Rational}
  * @returns {number}
  */
-Rational.dist = function (lhs, rhs) {
+Rational.distance = function (lhs, rhs) {
   return Rational.div(lhs, rhs).norm();
 };
 

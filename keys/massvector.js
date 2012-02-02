@@ -10,7 +10,17 @@
 
 /** @constructor */
 var MassVector = function (init) {
-  this.likes = init === undefined ? [] : new Array(init);
+  if (init instanceof MassVector) {
+    this.likes = init.likes.slice();
+  } else if (init instanceof Array) {
+    this.likes = init.slice();
+  } else if (typeof init === 'number') {
+    this.likes = new Array(init);
+  } else {
+    assert(init === undefined,
+        'bad MassVector initializer type: ' + (typeof init));
+    this.likes = [];
+  }
 };
 
 MassVector.prototype = {
@@ -43,12 +53,29 @@ MassVector.prototype = {
 
   dot: function (values) {
     var likes = this.likes;
-    //assert(values.length === likes.length, 'mismatched length in MassVector.dot');
+    //assertEqual(values.length, likes.length,
+    //    'mismatched length in MassVector.dot');
     var result = 0;
     for (var i = 0, I = likes.length; i < I; ++i) {
       result += likes[i] * values[i];
     }
     return result;
+  },
+
+  iadd: function (other, scale) {
+    if (other instanceof MassVector) other = other.likes;
+    var likes = this.likes;
+    assertLength(other, likes.length, 'iadd argument');
+
+    if (scale === undefined) {
+      for (var i = 0, I = likes.length; i < I; ++i) {
+        likes[i] += other[i];
+      }
+    } else {
+      for (var i = 0, I = likes.length; i < I; ++i) {
+        likes[i] += other[i] * scale;
+      }
+    }
   },
 
   shiftTowards: function (other, rate) {
@@ -78,7 +105,9 @@ MassVector.prototype = {
       }
     }
     return indices;
-  }
+  },
+
+  none: undefined
 };
 
 MassVector.zero = function (N) {
@@ -100,6 +129,16 @@ MassVector.degenerate = function (n, N) {
     likes[i] = 0;
   }
   likes[n] = 1;
+  return result;
+};
+
+MassVector.uniform = function (N) {
+  assert(0 < N, 'bad size MassVector.uniform: ' + N);
+  var result = new MassVector(N);
+  var likes = result.likes;
+  for (var i = 0; i < N; ++i) {
+    likes[i] = 1/N;
+  }
   return result;
 };
 

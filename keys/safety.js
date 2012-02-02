@@ -56,6 +56,9 @@ var assertNear = function (actual, expected, message) {
     '\n    actual = ' + actual +
     '\n    expected = ' + expected);
 };
+var assertLength = function (obj, length, message) {
+  assertEqual(obj.length, length, (message || '') + ' array has wrong length');
+};
 var assertType = function (obj, type, message) {
   assert(obj instanceof type,
       (message || '') +

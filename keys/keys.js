@@ -103,7 +103,7 @@ var Harmony = function (radius) {
   for (var i = 0; i < this.length; ++i) {
     var row = energyMatrix[i] = [];
     for (var j = 0; j < this.length; ++j) {
-      row[j] = Rational.dist(this.points[i], this.points[j]);
+      row[j] = Rational.distance(this.points[i], this.points[j]);
     }
   }
 
@@ -254,6 +254,39 @@ var Synthesizer = function (harmony) {
 
   this.initOnsets();
 
+  this.profileCount = 0;
+  this.profileElapsed = 0;
+
+  var synth = this;
+  this.synthworker = new Worker('synthworker.js');
+  this.synthworker.addEventListener('message', function (e) {
+        var data = e['data'];
+        switch (data['type']) {
+          case 'wave':
+            synth.play(data['data']);
+            synth.profileCount += 1;
+            synth.profileElapsed += data['profileElapsed'];
+            break;
+
+          case 'log':
+            log('Synth Worker: ' + data['data']);
+            break;
+
+          case 'error':
+            log('Synth Worker Error: ' + data['data']);
+            break;
+        }
+      }, false);
+  this.synthworker.postMessage({
+    'cmd': 'init',
+    'data': {
+        'gain': this.sustainGain,
+        'freqs': this.freqs,
+        'numVoices': this.numVoices,
+        'numSamples': this.synthSamples
+      }
+    });
+
   this.running = false;
   this.targetTime = Date.now();
 };
@@ -263,39 +296,6 @@ Synthesizer.prototype = {
   start: function () {
     if (this.running) return;
     this.running = true;
-    var synth = this;
-
-    this.profileCount = 0;
-    this.profileElapsed = 0;
-
-    this.synthworker = new Worker('synthworker.js');
-    this.synthworker.addEventListener('message', function (e) {
-          var data = e['data'];
-          switch (data['type']) {
-            case 'wave':
-              synth.play(data['data']);
-              synth.profileCount += 1;
-              synth.profileElapsed += data['profileElapsed'];
-              break;
-
-            case 'log':
-              log('Synth Worker: ' + data['data']);
-              break;
-
-            case 'error':
-              log('Synth Worker Error: ' + data['data']);
-              break;
-          }
-        }, false);
-    this.synthworker.postMessage({
-      'cmd': 'init',
-      'data': {
-          'gain': this.sustainGain,
-          'freqs': this.freqs,
-          'numVoices': this.numVoices,
-          'numSamples': this.synthSamples
-        }
-      });
 
     this.targetTime = Date.now() + this.delayMs;
     this.updateTask = undefined;
@@ -308,8 +308,6 @@ Synthesizer.prototype = {
       this.updateTask = undefined;
     }
 
-    this.synthworker.terminate();
-
     if (!testing) {
       var profileMean = 1e-3 * this.profileElapsed / this.profileCount;
       log('Synthesizer mean time = ' + profileMean + ' sec');
@@ -317,10 +315,9 @@ Synthesizer.prototype = {
   },
 
   update: function () {
-    var mass = this.harmony.mass.likes;
     this.synthworker.postMessage({
           'cmd': 'synthesize',
-          'data': mass
+          'data': this.harmony.mass.likes
         });
   },
   play: function (uri) {
@@ -452,11 +449,14 @@ test('web worker echo', function(){
 
 /** @constructor */
 var Keyboard = function (harmony, synthesizer) {
+
+  var mockSynthesizer = {playOnset : function(){}};
+
   this.harmony = harmony;
-  this.synthesizer = synthesizer;
+  this.synthesizer = synthesizer || mockSynthesizer;
   this.delayMs = 1000 / config.keyboard.updateHz;
 
-  this.canvas = document.getElementById('canvas');
+  this.canvas = $('#canvas')[0];
   this.context = this.canvas.getContext('2d');
 
   this.running = false;
@@ -575,10 +575,9 @@ Keyboard.prototype = {
   },
 
   onclick: function (index) {
-    this.harmony.updateAddMass(index, config.synth.clickGain);
-    if (this.synthesizer !== undefined) {
-      this.synthesizer.playOnset(index, 1);
-    }
+    var gain = config.synth.clickGain;
+    this.harmony.updateAddMass(index, gain);
+    this.synthesizer.playOnset(index, gain);
   },
   onswipe: function (indices) {
     this._swiped = true;
@@ -1227,11 +1226,16 @@ Keyboard.styles['piano'] = {
     var indices = [];
     for (var k = 0, K = keys.length; k < K; ++k) {
       var y = ypos[k];
-      if ((y0 > y) || (y1 > y)) continue; // approximate
+      var x = xpos[k];
+      var r = radii[k];
 
-      var x = xpos[k] + dir * radii[k];
-      if ((x0 - x) * (x - x1) > 0) {
-        indices.push(keys[k]);
+      if (y0 <= y && y1 <= y) { // approximate
+        x += dir * r;
+        if ((x0 - x) * (x - x1) > 0) {
+          indices.push(keys[k]); // sideways swipe
+        }
+      } else if (x - r <= x1 && x1 <= x + r && y1 <= y && y < y0) {
+        indices.push(keys[k]); // upward swipe
       }
     }
 
@@ -1498,26 +1502,14 @@ test('main', function(){
   harmony.stop();
 });
 
-$(document).ready(function(){
+var main = function () {
 
-  if (!verifyBrowser()) return;
-
-  var canvas = document.getElementById('canvas');
+  var canvas = $('#canvas')[0];
   var $style = $('#style');
   var style = config.keyboard.defaultStyle;
-  $(window).resize(function(){
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }).resize();
 
   if (window.location.hash) {
-    if (window.location.hash.substr(1) === 'test') {
-      document.title = 'The Rational Keyboard - Unit Test';
-      $('#toolbar').hide();
-      test.runAll();
-      return;
-    }
-    else if (window.location.hash.substr(1,6) === 'style=') {
+    if (window.location.hash.substr(1,6) === 'style=') {
       style = window.location.hash.substr(7);
     }
     else if (window.location.hash.substr(1,7) === 'random=') {
@@ -1589,5 +1581,31 @@ $(document).ready(function(){
       });
 
   setTimeout(startRunning, 1000);
+};
+
+$(function(){
+
+  if (!verifyBrowser()) return;
+
+  var canvas = $('#canvas')[0];
+  $(window).resize(function(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }).resize();
+
+  if (window.location.hash && window.location.hash.substr(1) === 'test') {
+
+    document.title = 'The Rational Keyboard - Unit Test';
+    test.runAll(function(){
+          document.title = 'The Rational Keyboard';
+          window.location.hash = '';
+          main();
+        });
+
+  } else {
+
+    main();
+
+  }
 });
 
