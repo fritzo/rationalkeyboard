@@ -8,7 +8,6 @@
  * http://www.opensource.org/licenses/mit-license.php
  */
 
-importScripts('workerlogger.js');
 importScripts('safety.js');
 importScripts('wavencoder.js');
 

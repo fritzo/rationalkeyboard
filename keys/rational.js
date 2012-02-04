@@ -184,6 +184,15 @@ Rational.cmp = function (lhs, rhs) {
  * @returns {number}
  */
 Rational.distance = function (lhs, rhs) {
+  return Math.abs(lhs.toNumber() - rhs.toNumber());
+};
+
+/**
+ * @param {Rational}
+ * @param {Rational}
+ * @returns {number}
+ */
+Rational.dissonance = function (lhs, rhs) {
   return Rational.div(lhs, rhs).norm();
 };
 

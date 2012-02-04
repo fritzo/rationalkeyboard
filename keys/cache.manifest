@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# version 2011-02-01
+# version 2011-02-02
 
 # use CACHE or NETWORK here
 CACHE:
@@ -8,8 +8,6 @@ CACHE:
 index.html
 jquery.min.js
 jquery.ba-hashchange.min.js
-logger.js
-workerlogger.js
 safety.js
 testing.js
 wavencoder.js

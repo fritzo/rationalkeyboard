@@ -35,7 +35,6 @@
 <script type='text/javascript' src='modernizr.custom.js'></script>
 
 <!-- MIT,GPL2 -->
-<script type='text/javascript' src='logger.js'></script>
 <script type='text/javascript' src='safety.js'></script>
 <script type='text/javascript' src='testing.js'></script>
 <script type='text/javascript' src='rational.js'></script>
@@ -216,6 +215,11 @@ canvas {
   border-color: #462;
 }
 
+.fb-comments,
+.fb-comments iframe[style] {
+  width: 100% !important;
+}
+
 #canvas { z-index: 0; }
 #showToolbar { z-index: 1; }
 #toolbar { z-index: 2; }
@@ -225,7 +229,20 @@ canvas {
 </head>
 <!----------------------------------------------------------------------------->
 <body>
+
+<div id="fb-root"></div>
+<script>
+(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+</script>
+
 <canvas id='canvas'></canvas>
+
 <div class='toolbar' id='toolbar'>
   <button id='showAbout' class='roundFlat' title='about The Rational Keyboard'><b>?</b></button></a><!--
   --><a class="a2a_dd" href="http://www.addtoany.com/share_save?linkurl=http%3A%2F%2Ffritzo.org%2Fkeys&amp;linkname=The%20Rational%20Keyboard" title='share'><button class='flatFlat'><b>+</b></button></a><!--
@@ -245,14 +262,21 @@ canvas {
 <div id='about'>
   <div id='aboutShadow'></div>
   <div id='aboutText'>
+
     <p>
     The Rational Keyboard is a browser app to play with harmony on the rational number line.
     Imagine a piano with infinitely many keys, one for each rational number, and the keys move around and resize based on what sounds good.
     </p>
+
     <p>
     Audio is synthesizes audio in background Web Workers and played with HTML5 Audio objects,
     and the interactive visualizations use a 2D HTML5 Canvas.
-    Audio seems to work best in recent Firefox and Chrome releases.
+    Check out the source at <a href="http://github.com/fritzo/rationalkeyboard">github</a>, or just grab the <a href="http://github.com/fritzo/wavencoderjs">audio encoder</a> for your own apps.
+    </p>
+
+    <p>
+    Audio seems to work best in recent Firefox and Chrome releases,
+    but HTML5 audio is still a young technology.
     Sometimes pausing helps to unglitch audio.
     </p>
 
@@ -264,6 +288,8 @@ canvas {
 <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" /></a>
       -->
     </p>
+
+    <div class="fb-comments" data-href="http://fritzo.org/keys" data-num-posts="5" data-width="470"></div>
   </div>
 </div>
 

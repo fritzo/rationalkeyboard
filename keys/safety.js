@@ -8,6 +8,25 @@
  */
 
 //------------------------------------------------------------------------------
+// Logging in the main window & web workers
+
+var log;
+if (this.document) { // in main window
+
+  if (window.console && window.console.log) {
+    log = function (message) { console.log(message); };
+  } else {
+    log = function (message) {}; // ignore
+  }
+
+} else { // in a web worker
+
+  log = function (message) {
+    self.postMessage({'type':'log', 'data':message});
+  };
+}
+
+//------------------------------------------------------------------------------
 // Global safety
 
 var globalEval = eval;

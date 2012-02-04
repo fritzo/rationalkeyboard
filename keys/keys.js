@@ -103,7 +103,7 @@ var Harmony = function (radius) {
   for (var i = 0; i < this.length; ++i) {
     var row = energyMatrix[i] = [];
     for (var j = 0; j < this.length; ++j) {
-      row[j] = Rational.distance(this.points[i], this.points[j]);
+      row[j] = Rational.dissonance(this.points[i], this.points[j]);
     }
   }
 
