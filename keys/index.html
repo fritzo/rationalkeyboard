@@ -69,6 +69,7 @@ $(function(){
 
 <!---------------------------------------------------------------------------->
 
+<link rel='stylesheet' href='toolbar.css' />
 <style>
 body {
   background-color: black;
@@ -91,70 +92,7 @@ canvas {
 }
 
 .toolbar {
-  position: fixed;
-  right: 0px;
-  bottom: 0px;
   opacity: 0.8;
-}
-.toolbar button,
-.toolbar a,
-.toolbar a:hover,
-.toolbar select,
-.toolbar option {
-  background-color: #444444;
-  color: white;
-  text-decoration: none;
-  font-family: helvetica, verdana, sans;
-  font-size: 16px;
-}
-.toolbar button,
-.toolbar select {
-  margin: 0px;
-  border: solid 2px black;
-  border-radius: 16px;
-  padding-left:  0.7ex;
-  padding-right: 0.7ex;
-  padding-top: 0ex;
-  padding-bottom: 0ex;
-}
-.toolbar option {
-  padding: 0px;
-  margin: 0px;
-}
-.toolbar :hover {
-  background-color: #666666;
-}
-.toolbar .roundRound {
-  border-top-left-radius:     12px;
-  border-bottom-left-radius:  12px;
-  border-top-right-radius:    12px;
-  border-bottom-right-radius: 12px;
-  padding-left:  0.7em;
-  padding-right: 0.7em;
-}
-.toolbar .roundFlat {
-  border-top-left-radius:     12px;
-  border-bottom-left-radius:  12px;
-  border-top-right-radius:    4px;
-  border-bottom-right-radius: 4px;
-  padding-left:  0.7em;
-  padding-right: 0.5em;
-}
-.toolbar .flatRound {
-  border-top-left-radius:     4px;
-  border-bottom-left-radius:  4px;
-  border-top-right-radius:    12px;
-  border-bottom-right-radius: 12px;
-  padding-left:  0.5em;
-  padding-right: 0.7em;
-}
-.toolbar .flatFlat {
-  border-top-left-radius:     4px;
-  border-bottom-left-radius:  4px;
-  border-top-right-radius:    4px;
-  border-bottom-right-radius: 4px;
-  padding-left:  0.5em;
-  padding-right: 0.5em;
 }
 
 #about {
@@ -188,7 +126,6 @@ canvas {
   padding-left: 30px;
   padding-right: 30px;
 }
-#aboutText a,
 #aboutText button,
 #aboutText img {
   vertical-align: middle;
@@ -215,10 +152,12 @@ canvas {
   border-color: #462;
 }
 
+/*
 .fb-comments,
 .fb-comments iframe[style] {
   width: 100% !important;
 }
+*/
 
 #canvas { z-index: 0; }
 #showToolbar { z-index: 1; }
@@ -230,6 +169,7 @@ canvas {
 <!----------------------------------------------------------------------------->
 <body>
 
+<!--
 <div id="fb-root"></div>
 <script>
 (function(d, s, id) {
@@ -240,6 +180,7 @@ canvas {
   fjs.parentNode.insertBefore(js, fjs);
 }(document, 'script', 'facebook-jssdk'));
 </script>
+-->
 
 <canvas id='canvas'></canvas>
 
@@ -265,12 +206,19 @@ canvas {
 
     <p>
     The Rational Keyboard is a browser app to play with harmony on the rational number line.
-    Imagine a piano with infinitely many keys, one for each rational number, and the keys move around and resize based on what sounds good.
+    Imagine a piano with infinitely many keys,
+    <a href='http://en.wikipedia.org/wiki/Just_intonation' title='Just Intonation'>one for each rational number</a>,
+    and the keys move around and resize based on
+    <a href='http://en.wikipedia.org/wiki/Consonance_and_dissonance' title='Consonance'>what sounds good</a>,
+    using some
+    <a href='https://www.google.com/search?q=arnold+tongues'>really cool math</a>.
     </p>
 
     <p>
-    Audio is synthesizes audio in background Web Workers and played with HTML5 Audio objects,
-    and the interactive visualizations use a 2D HTML5 Canvas.
+    Audio is synthesized in background Web Workers and played with
+    <a href='https://developer.mozilla.org/En/HTML/Element/Audio'>HTML5 Audio objects</a>,
+    and the interactive visualizations use a
+    <a href='https://developer.mozilla.org/en/HTML/Canvas'>2D HTML5 Canvas</a>.
     Check out the source at <a href="http://github.com/fritzo/rationalkeyboard">github</a>, or just grab the <a href="http://github.com/fritzo/wavencoderjs">audio encoder</a> for your own apps.
     </p>
 
@@ -287,9 +235,12 @@ canvas {
       <a href="http://flattr.com/thing/471573/The-Rational-Keyboard" target="_blank">
 <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" /></a>
       -->
+      <a style='float:right' href='http://fritzo.org'>-fritz obermeyer</a>
     </p>
 
+    <!--
     <div class="fb-comments" data-href="http://fritzo.org/keys" data-num-posts="5" data-width="470"></div>
+    -->
   </div>
 </div>
 

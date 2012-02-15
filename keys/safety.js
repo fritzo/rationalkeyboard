@@ -42,6 +42,7 @@ TodoException.prototype.toString = function () {
 var TODO = function (message) {
   throw new TodoException(message);
 };
+TODO.help = 'TODO(optionalMessage) is a placeholder for unfinished code';
 
 /** @constructor */
 var AssertException = function (message) {
@@ -55,10 +56,13 @@ var assert = function (condition, message) {
     throw new AssertException(message);
   }
 };
+assert.help = 'assert(condition, optionalMessage) throws if condition is false';
 
 var assertEval = function (message) {
   assert(eval(message), message);
 };
+assertEval.help = 'assertEval(message) throws if eval(message) is false';
+
 var assertEqual = function (actual, expected, message) {
   if (!(actual instanceof String) || !(expected instanceof String)) {
     actual = JSON.stringify(actual);
@@ -69,35 +73,12 @@ var assertEqual = function (actual, expected, message) {
     '\n    actual = ' + actual +
     '\n    expected = ' + expected);
 };
-var assertNear = function (actual, expected, message) {
-  assert(Math.abs(actual - expected) < 1e-8,
-    (message || '') +
-    '\n    actual = ' + actual +
-    '\n    expected = ' + expected);
-};
+assertEqual.help = 'assertEqual(x, y, optionalMessage) throws if x !== y';
+
 var assertLength = function (obj, length, message) {
   assertEqual(obj.length, length, (message || '') + ' array has wrong length');
 };
-var assertType = function (obj, type, message) {
-  assert(obj instanceof type,
-      (message || '') +
-      'type error for ' + obj +
-      '\n    actual type = ' + (typeof object) +
-      '\n    expected ttype = ' + type);
-};
-
-var typedFun = function (argTypes, returnType, fun) {
-  var nargs = argTypes.length;
-  return (function () {
-    assertEqual(arguments.length, nargs, 'invalid argmuent count');
-    for (var i = 0; i < nargs; ++i) {
-      assertType(arguments[i], argTypes[i], 'argument ' + i);
-    }
-    var result = fun.apply(this, arguments);
-    assertType(result, returnType, 'result');
-    return result;
-  });
-};
+assertLength.help = 'assertLength(o, n, optionalName) throws if o.length != n';
 
 /** @constructor */
 var WorkerException = function (message) {

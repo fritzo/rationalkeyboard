@@ -22,7 +22,7 @@ var init = function (data) {
   self.F = self.freqs.length;
   self.T = data['numSamples'];
 
-  self.wavEncoder = new WavEncoder(data['numSamples']);
+  self.wavEncoder = new WavEncoder(data['numSamples'], {clip:false});
   self.samples = new Array(self.T);
   self.amps = new Array(self.F);
   self.best = new Array(self.F);
@@ -62,16 +62,37 @@ var synthesize = function (mass) {
     bestFreqs[g] = freqs[f];
   }
 
+  var sin = Math.sin;
+  var sqrt = Math.sqrt;
   var samples = self.samples;
+
+  // Version 1. time, voice
   for (var t = 0; t < T; ++t) {
     var chord = 0;
     for (var g = 0; g < G; ++g) {
-      chord += bestAmps[g] * Math.sin(bestFreqs[g] * t);
+      chord += bestAmps[g] * sin(bestFreqs[g] * t);
     }
     chord *= (t + 1) * (T - t); // envelope
-    chord *= 0.5 / Math.sqrt(1 + chord * chord); // clip to [-0.5,0.5]
+    chord *= 0.5 / sqrt(1 + chord * chord); // clip to [-0.5,0.5]
     samples[t] = chord;
   }
+
+  // Version 2. voice, time
+  //for (var t = 0; t < T; ++t) {
+  //  samples[t] = 0;
+  //}
+  //for (var g = 0; g < G; ++g) {
+  //  var amp = bestAmps[g];
+  //  var freq = bestFreqs[g];
+  //  for (var t = 0; t < T; ++t) {
+  //    samples[t] += amp * sin(freq * t);
+  //  }
+  //}
+  //for (var t = 0; t < T; ++t) {
+  //  var chord = samples[t] * (t + 1) * (T - t); // envelope
+  //  chord *= 0.5 / sqrt(1 + chord * chord); // clip to [-0.5,0.5]
+  //  samples[t] = chord;
+  //}
 
   var uri = self.wavEncoder.encode(samples);
 

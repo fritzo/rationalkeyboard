@@ -74,7 +74,7 @@ test.runAll = function (onExit) {
   log('[ Running ' + test._all.length + ' unit tests ]');
   testing = true;
 
-  var failCount = 0;
+  var failed = [];
   for (var i = 0; i < test._all.length; ++i) {
     var callback = test._all[i];
     try {
@@ -82,12 +82,12 @@ test.runAll = function (onExit) {
     }
     catch (err) {
       log('FAILED ' + callback.title + '\n  ' + err);
-      failCount += 1;
+      failed.push(callback);
     }
   }
 
-  if (failCount) {
-    log('[ failed ' + failCount + ' tests ]');
+  if (failed.length) {
+    log('[ failed ' + failed.length + ' tests ]');
     $log.css({
           'background-color': '#ffaaaa',
           'border-color': '#ffaaaa'
@@ -98,6 +98,13 @@ test.runAll = function (onExit) {
           'background-color': '#aaffaa',
           'border-color': '#aaffaa'
         });
+  }
+
+  // call all failed tests to get stack traces
+  for (var i = 0; i < failed.length; ++i) {
+    (function(i){
+      setTimeout(failed[i], 0);
+    })(i);
   }
 };
 

@@ -107,6 +107,20 @@ MassVector.prototype = {
     return indices;
   },
 
+  sample: function () {
+    var likes = this.likes;
+    var length = likes.length;
+    var total = this.total();
+    assert(total > 0, 'cannot sample zero mass function');
+    var random = Math.random;
+    while (true) { // accomodate round-off error
+      var t = random() * total;
+      for (var i = 0; i < length; ++i) {
+        if ((t -= likes[i]) < 0) return i;
+      }
+    }
+  },
+
   none: undefined
 };
 
@@ -199,5 +213,24 @@ test('MassVector.shiftTowards', function(){
   var rate = 1/3;
   p0.shiftTowards(p1, rate);
   assertEqual(p0.likes, [0, 1/6, 5/6]);
+});
+
+test('MassVector.sample (statistical)', function(){
+  var p = new MassVector([0,1,2]);
+  var hits = MassVector.zero(3);
+  var N = 1e4;
+  for (var n = 0; n < N; ++n) {
+    hits.likes[p.sample()] += 1;
+  }
+  assertEqual(hits.likes.length, 3, 'hits.length');
+  assertEqual(hits.total(), N, 'hits.total');
+  hits.normalize();
+  hits = hits.likes;
+
+  var variance = (1/3) * (2/3) / N;
+  var tol = 5 * Math.sqrt(variance);
+  assert(Math.abs(hits[0] - 0) < tol, 'bad hits[0]: ' + hits[0]);
+  assert(Math.abs(hits[1] - 1/3) < tol, 'bad hits[1]: ' + hits[1]);
+  assert(Math.abs(hits[2] - 2/3) < tol, 'bad hits[2]: ' + hits[2]);
 });
 

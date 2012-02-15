@@ -1,11 +1,12 @@
 CACHE MANIFEST
-# version 2011-02-02
+# version 2011-02-15
 
 # use CACHE or NETWORK here
 CACHE:
 
 # Code
 index.html
+toolbar.css
 jquery.min.js
 jquery.ba-hashchange.min.js
 safety.js
