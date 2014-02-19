@@ -1,6 +1,7 @@
-# The Rationa Keyboard http://fritzo.org/keys
+# The Rationa Keyboard
 
-## A browser app to demonstrate harmony in just intonation.
+A browser app to demonstrate harmony in just intonation.
+http://fritzo.org/keys
 
 The Rational Keyboard is a browser app to play with harmony on the rational number line.
 Imagine a piano with infinitely many keys,
