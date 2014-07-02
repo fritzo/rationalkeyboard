@@ -1,4 +1,4 @@
-# The Rationa Keyboard
+# The Rational Keyboard
 
 A browser app to demonstrate harmony in just intonation.
 http://fritzo.org/keys
