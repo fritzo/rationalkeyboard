@@ -1573,7 +1573,7 @@ var main = function () {
       harmony.randomizeRate = 1.0;
       $('#randomizeButton').css(css_down);
     } else {
-      harmony.randomizeRate === 0.0;
+      harmony.randomizeRate = 0.0;
       $('#randomizeButton').css(css_up);
     }
   };
