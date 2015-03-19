@@ -1556,16 +1556,34 @@ var main = function () {
       running = false;
     }
   };
+
+  var css_up = {'background-color': '#444444'};
+  var css_down = {'background-color': '#662222'};
   var toggleRunning = function () {
-    running ? stopRunning() : startRunning();
+    if (running) {
+      stopRunning();
+      $('#pauseButton').css(css_down);
+    } else {
+      startRunning();
+      $('#pauseButton').css(css_up);
+    }
+  };
+  var toggleRandom = function () {
+    if (harmony.randomizeRate === 0.0) {
+      harmony.randomizeRate = 1.0;
+      $('#randomizeButton').css(css_down);
+    } else {
+      harmony.randomizeRate === 0.0;
+      $('#randomizeButton').css(css_up);
+    }
   };
 
   $('#pauseButton').on('click', toggleRunning);
+  $('#randomizeButton').on('click', toggleRandom);
   $(document).on('keyup', function (e) {
         switch (e.which) {
-          case 27:
-            toggleRunning();
-            break;
+          case 27: toggleRunning(); break;
+          case 32: toggleRandom(); break;
         }
       });
 
