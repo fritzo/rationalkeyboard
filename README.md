@@ -1,3 +1,5 @@
+DISCLAIMER: The Rational Keyboard does NOT actually have infinitely many keys. For practical purposes, the Keyboard only has 279 keys, all of which represent the rational numbers closest to 1/1, the origin point.
+
 # The Rational Keyboard
 
 A browser app to demonstrate harmony in just intonation.
