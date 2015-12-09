@@ -23,3 +23,5 @@ or just grab the [audio encoder](http://github.com/fritzo/wavencoderjs) for your
 Audio seems to work best in recent Firefox and Chrome releases,
 but HTML5 audio is still a young technology.
 Sometimes pausing helps to unglitch audio.
+
+DISCLAIMER: The Rational Keyboard does NOT actually have infinitely many keys. For practical purposes, the Keyboard only has 279 keys, all of which represent the rational numbers closest to 1/1, the origin point.
